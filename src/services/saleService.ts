@@ -27,9 +27,9 @@ const getSalesToday = async (): Promise<Sale[]> => {
 };
 
 const createSale = async (sale: Sale): Promise<Sale> => {
-  const productsJson = sale.sales_products.map((p) => ({
+  const productsJson = sale.sale_products.map((p) => ({
     product_id: p.product_id,
-    product_name: p.name, 
+    product_name: p.product_name, 
     price: p.price,
     quantity: p.quantity,
   }));
