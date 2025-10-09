@@ -32,7 +32,7 @@ export const SaleDetail = ({ openModal, setOpenModal }: SaleDetailProps) => {
       <ModalHeader className="py-4 dark:bg-gray-800 dark:text-gray-100">
         Detalles de venta
       </ModalHeader>
-      <ModalBody className="dark:bg-gray-900 dark:text-gray-100">
+      <ModalBody className="dark:bg-gray-900 dark:text-gray-100  px-1">
         <div className="grid grid-cols-2 gap-4 w-full space-y-1">
           <div className="flex flex-col border-b border-gray-300 dark:border-gray-700">
             <span className="text-gray-700 dark:text-gray-300 capitalize">
@@ -58,7 +58,7 @@ export const SaleDetail = ({ openModal, setOpenModal }: SaleDetailProps) => {
               {saleDetail.customer_name}
             </span>
           </div>
-          <div className="col-span-2 flex flex-col gap-2">
+          <div className="col-span-2 flex flex-col gap-2 overflow-x-auto" >
             <span className="text-gray-700 dark:text-gray-300">Productos:</span>
             <Table>
               <TableHead className="dark:bg-gray-800">
@@ -102,12 +102,12 @@ export const SaleDetail = ({ openModal, setOpenModal }: SaleDetailProps) => {
               Total:
             </h2>
             <span className="font-extrabold text-xl text-gray-900 dark:text-gray-100">
-              ${saleDetail.total_pay}
+              ${saleDetail.total_pay.toFixed(2)}
             </span>
           </div>
         </div>
       </ModalBody>
-      <ModalFooter className="dark:bg-gray-800">
+      <ModalFooter className="dark:bg-gray-800 p-3">
         <Button onClick={setOpenModal}>Ok</Button>
       </ModalFooter>
     </Modal>

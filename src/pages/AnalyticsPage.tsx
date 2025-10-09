@@ -8,11 +8,11 @@ import AnalyticsChart from "../components/LineChart";
 export const AnalyticsPage = () => {
   return (
     <section>
-      <div className="border-b border-gray-300 py-2 flex justify-between">
+      <div className="border-b border-gray-300 py-2 flex flex-col md:flex-row  gap-2 justify-between">
         <h2 className="text-3xl font-medium">Analisis de ventas</h2>
         <Select
           // onChange={(e) => setPeriod(e.target.value as Period)}
-          className="w-xs"
+          className="md:w-xs "
           id="countries"
           required
         >
@@ -23,7 +23,7 @@ export const AnalyticsPage = () => {
         </Select>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Stat
           title="ingresos total"
           data={`$${4000}`}

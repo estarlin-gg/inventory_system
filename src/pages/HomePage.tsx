@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useStore } from "../store/store";
 import { Stat } from "../components/Stat";
 
@@ -11,12 +10,6 @@ export const HomePage = () => {
   // const getProducts = useStore((s) => s.getproducts);
   // const getSalesToday = useStore((s) => s.getSalesToday);
   const salesToday = useStore((s) => s.salesToday);
-
-  useEffect(() => {
-    // getProducts();
-    // getSalesToday();
-  }, []);
-  // }, [getProducts, getSalesToday]);
 
   const totalStock = salesToday.reduce((total, sale) => {
     return (
@@ -34,7 +27,7 @@ export const HomePage = () => {
         <h2 className="text-3xl font-medium">Dashboard de negocio</h2>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4">
         <Stat
           title="ingresos del día"
           data={`$${totalIncome}`}
