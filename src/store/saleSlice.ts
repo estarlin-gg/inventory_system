@@ -12,7 +12,7 @@ export interface SaleState {
   updateSaleDetail: (partial: Partial<Sale>) => void;
   handleShoppingList: () => void;
   sales: Sale[];
-  salesToday: Sale[];
+
   sale: Sale;
   shoppingList: SalesProduct[];
   addShoppinList: (p: SalesProduct) => void;
@@ -39,7 +39,7 @@ export const useSaleSlice: StateCreator<SaleState & ProductState> = (
     sale_products: [],
   },
   sales: [],
-  salesToday: [],
+
   sale: {} as Sale,
   customerName: "Cliente Desconocido",
   shoppingList: [],

@@ -27,13 +27,13 @@ export const InventoryPage = () => {
           type="search"
           placeholder="Buscar...."
           className="w-full"
-          sizing="lg"
+          sizing="md"
         />
         <Link to={"create"}>
           <Button
             onClick={() => setSelectedProduct(null)}
             color="green"
-            size="xl"
+            size="md"
           >
             <span>Crear</span>
             <CgAdd size={20} className="mx-2" />

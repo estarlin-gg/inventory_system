@@ -11,19 +11,15 @@ export const login = async (c: LoginCredentials) => {
 };
 
 export const register = async (c: Credentials) => {
-  // const { data, error } = await supabase.auth.signUp({
-  //   email: c.email,
-  //   password: c.password,
-  // });
   const res = await supabase.auth.signUp({
     email: c.email,
     password: c.password,
   });
-  
+
   return res;
 };
 
 export const logout = async () => {
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: "local" });
   if (error) throw error;
 };

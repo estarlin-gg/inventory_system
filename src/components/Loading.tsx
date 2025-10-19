@@ -2,8 +2,8 @@ import { Spinner } from "flowbite-react";
 
 export const Loading = () => {
   return (
-    <div className="h-full w-full flex justify-center items-center overflow-hidden bg-white dark:bg-gray-900">
-      <div className="flex justify-center items-center min-w-screen min-h-screen">
+    <div className="min-h-screen fixed z-50 min-w-screen overflow-hidden flex justify-center items-center  bg-white dark:bg-gray-900">
+      <div className="flex justify-center items-center w-screen h-full">
         <Spinner size="xl" />
       </div>
     </div>

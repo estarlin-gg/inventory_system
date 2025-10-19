@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "flowbite-react";
 import { useStore } from "../store/store";
+import { formatCurrency } from "../helpers/formatCurrency";
 
 interface SaleDetailProps {
   openModal: boolean;
@@ -32,7 +33,7 @@ export const SaleDetail = ({ openModal, setOpenModal }: SaleDetailProps) => {
       <ModalHeader className="py-4 dark:bg-gray-800 dark:text-gray-100">
         Detalles de venta
       </ModalHeader>
-      <ModalBody className="dark:bg-gray-900 dark:text-gray-100  px-1">
+      <ModalBody className="dark:bg-gray-900 dark:text-gray-100 flex justify-center">
         <div className="grid grid-cols-2 gap-4 w-full space-y-1">
           <div className="flex flex-col border-b border-gray-300 dark:border-gray-700">
             <span className="text-gray-700 dark:text-gray-300 capitalize">
@@ -84,25 +85,25 @@ export const SaleDetail = ({ openModal, setOpenModal }: SaleDetailProps) => {
                       {p.product_name}
                     </TableCell>
                     <TableCell className="dark:text-gray-300">
-                      ${p.price}
+                      {formatCurrency(p.price)}
                     </TableCell>
                     <TableCell className="dark:text-gray-300">
                       {p.quantity}
                     </TableCell>
                     <TableCell className="dark:text-gray-300">
-                      {p.price * p.quantity}
+                      {formatCurrency(p.price * p.quantity)}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
-          <div className="col-span-3 flex gap-2">
+          <div className="col-span-3 justify-end flex gap-2">
             <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
               Total:
             </h2>
             <span className="font-extrabold text-xl text-gray-900 dark:text-gray-100">
-              ${saleDetail.total_pay.toFixed(2)}
+              {formatCurrency(saleDetail.total_pay)}
             </span>
           </div>
         </div>

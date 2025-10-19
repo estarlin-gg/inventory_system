@@ -16,7 +16,7 @@ export const useProducts = () => {
   const productsQuery = useQuery({
     queryKey: ["products"],
     queryFn: productService.getProducts,
-    staleTime: 1000 * 60 * 60,
+    staleTime: 1000 * 30 * 30,
     refetchOnWindowFocus: false,
   });
 
@@ -29,8 +29,8 @@ export const useProducts = () => {
   const createProductMutation = useMutation({
     mutationFn: productService.createProduct,
     onSuccess: (data) => {
-      addProduct(data);
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      addProduct(data);
       Swal.fire("Éxito", "Producto creado correctamente", "success");
     },
     onError: () => {

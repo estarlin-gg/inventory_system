@@ -25,14 +25,14 @@ export const SalesPage = () => {
           type="search"
           placeholder="Buscar...."
           className="w-full"
-          sizing="lg"
+          sizing="md"
         />
 
         <Button
           onClick={handleShoppingList}
           className="rounded-lg relative"
           color="yellow"
-          size="xl"
+          size="md"
         >
           {shoppingList.length > 0 && (
             <Badge className="absolute -top-3 right-0.5 rounded-full">

@@ -1,13 +1,18 @@
 import {
   Sidebar,
   SidebarCollapse,
+  SidebarItem,
   SidebarItemGroup,
   SidebarItems,
+  SunIcon,
+  MoonIcon,
+  useThemeMode,
 } from "flowbite-react";
 import { HiChartPie, HiShoppingBag, HiMenu, HiX } from "react-icons/hi";
 import { useState } from "react";
 import { SidebarLink } from "./SidebarLink";
-import { BiMoney } from "react-icons/bi";
+import { BiLogOut, BiMoney } from "react-icons/bi";
+import { useAuth } from "../hooks/useAuth";
 
 export const SideBar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -16,7 +21,9 @@ export const SideBar = () => {
     <>
       {/* Header móvil */}
       <div className="bg-slate-200 dark:bg-slate-800 p-4 flex justify-between items-center lg:hidden">
-        <span className="text-slate-900 dark:text-white font-bold">MimaApp</span>
+        <span className="text-slate-900 dark:text-white font-bold">
+          MimaApp
+        </span>
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
           className="text-slate-900 dark:text-white text-2xl"
@@ -43,7 +50,7 @@ export const SideBar = () => {
 
           {/* Sidebar */}
           <div className="relative w-64 bg-slate-200 dark:bg-slate-900 shadow-lg z-50">
-            <Sidebar aria-label="Sidebar móvil" className="h-full">
+            <Sidebar aria-label="Sidebar " className="h-full">
               <SidebarContent />
             </Sidebar>
           </div>
@@ -53,17 +60,40 @@ export const SideBar = () => {
   );
 };
 
-const SidebarContent = () => (
-  <SidebarItems className="h-full">
-    <SidebarItemGroup>
-      <SidebarCollapse icon={HiChartPie} label="Home">
-        <SidebarLink title="Dashboard" url="/home" />
-        <SidebarLink title="Historial" url="/history" />
-        <SidebarLink title="Análisis" url="/analytics" />
-      </SidebarCollapse>
+const SidebarContent = () => {
+  const { computedMode, toggleMode } = useThemeMode();
+  const { logout } = useAuth();
 
-      <SidebarLink title="Ventas" url="/sales" icon={BiMoney} />
-      <SidebarLink title="Inventario" url="/inventory" icon={HiShoppingBag} />
-    </SidebarItemGroup>
-  </SidebarItems>
-);
+  return (
+    <SidebarItems className="h-full flex flex-col justify-between">
+      <SidebarItemGroup>
+        <SidebarCollapse icon={HiChartPie} label="Home">
+          <SidebarLink title="Dashboard" url="/home" />
+          <SidebarLink title="Historial" url="/history" />
+          <SidebarLink title="Análisis" url="/analytics" />
+        </SidebarCollapse>
+
+        <SidebarLink title="Ventas" url="/sales" icon={BiMoney} />
+        <SidebarLink title="Inventario" url="/inventory" icon={HiShoppingBag} />
+      </SidebarItemGroup>
+
+      <SidebarItemGroup>
+        <SidebarItem
+          className="px-2 flex items-center cursor-pointer"
+          icon={computedMode === "dark" ? MoonIcon : SunIcon}
+          onClick={toggleMode}
+        >
+          <span>{computedMode === "dark" ? "Oscuro" : "Claro"}</span>
+        </SidebarItem>
+
+        <SidebarItem
+          className="px-2 text-red-600 dark:text-red-600 cursor-pointer mt-2 text flex items-center"
+          icon={() => <BiLogOut color="red" size={23} />}
+          onClick={() => logout()}
+        >
+          Log Out
+        </SidebarItem>
+      </SidebarItemGroup>
+    </SidebarItems>
+  );
+};

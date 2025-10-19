@@ -9,6 +9,7 @@ import { useStore } from "../store/store";
 import { ShoppingItem } from "./ShoppingItem";
 import { useMemo } from "react";
 import { useSaleQuery } from "../queries/useSaleQuery";
+import { BsListUl } from "react-icons/bs";
 
 interface DrawerProps {
   open: boolean;
@@ -29,16 +30,17 @@ export const ShoopList = ({ open, onClose }: DrawerProps) => {
 
   return (
     <Drawer
-      className="w-sm md:w-md lg:w-xl h-dvh overflow-hidden
-                 bg-white dark:bg-gray-900
-                 text-gray-900 dark:text-gray-100
-                 transition-colors duration-300"
+      className="w-sm md:w-md lg:w-xl h-[100dvh] flex flex-col
+             bg-white dark:bg-gray-900
+             text-gray-900 dark:text-gray-100
+             transition-colors duration-300"
       open={open}
       onClose={onClose}
       position="right"
     >
       <DrawerHeader
         title="Lista de productos"
+        titleIcon={BsListUl}
         className="border-b border-gray-200 dark:border-gray-700"
       />
 

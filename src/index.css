@@ -2,17 +2,17 @@
 @plugin "flowbite-react/plugin/tailwindcss";
 @source "../.flowbite-react/class-list.json";
 
+@custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
-  font-family: 'MiFuente';
-  src: url('./assets/fonts/Poppins-Regular.ttf') format('truetype');
+  font-family: "MiFuente";
+  src: url("./assets/fonts/Poppins-Regular.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 body {
-  font-family: 'MiFuente', sans-serif;
+  font-family: "MiFuente", sans-serif;
   margin: 0;
   padding: 0;
 }
-

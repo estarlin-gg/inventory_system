@@ -27,6 +27,7 @@ export const HistoryPage = () => {
         <div className="flex flex-col md:flex-row gap-3">
           <div className="max-w-md">
             <TextInput
+              sizing="md"
               type="search"
               icon={BiSearch}
               placeholder="Busca por ID, cliente.."

@@ -1,25 +1,23 @@
-import { useStore } from "../store/store";
+// import { useStore } from "../store/store";
 import { Stat } from "../components/Stat";
 
 import { MdAttachMoney, MdInventory, MdPointOfSale } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { Button } from "flowbite-react";
 import { SalesTable } from "../components/SaleTable";
+import { useAnalytics } from "../hooks/useAnalytics";
+import { formatCurrency } from "../helpers/formatCurrency";
+import { useHistoryQuery } from "../queries/useHistoryQuery";
+import { Loading } from "../components/Loading";
 
 export const HomePage = () => {
-  // const getProducts = useStore((s) => s.getproducts);
-  // const getSalesToday = useStore((s) => s.getSalesToday);
-  const salesToday = useStore((s) => s.salesToday);
+  const { analyticsOfTheDay } = useAnalytics();
+  const { historyQuery } = useHistoryQuery();
+  if (historyQuery.isLoading) {
+    return <Loading />;
+  }
 
-  const totalStock = salesToday.reduce((total, sale) => {
-    return (
-      total + sale.sale_products.reduce((sum, prod) => sum + prod.quantity, 0)
-    );
-  }, 0);
-
-  const totalIncome = salesToday.reduce((sum, sale) => sum + sale.total_pay, 0);
-
-  const recentSales = salesToday.slice(0, 9);
+  console.log(analyticsOfTheDay);
 
   return (
     <section>
@@ -30,13 +28,17 @@ export const HomePage = () => {
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4">
         <Stat
           title="ingresos del día"
-          data={`$${totalIncome}`}
+          data={formatCurrency(analyticsOfTheDay.incomeOfDay)}
           icon={MdAttachMoney}
         />
-        <Stat title="stocks vendidos" data={totalStock} icon={MdInventory} />
+        <Stat
+          title="stocks vendidos"
+          data={analyticsOfTheDay.totalStock}
+          icon={MdInventory}
+        />
         <Stat
           title="ventas del día"
-          data={salesToday.length}
+          data={analyticsOfTheDay.salesOfTheDay.length}
           icon={MdPointOfSale}
         />
       </div>
@@ -48,7 +50,7 @@ export const HomePage = () => {
             <Button color={"alternative"}>Ver todas</Button>
           </Link>
         </div>
-        <SalesTable sales={recentSales} />
+        <SalesTable sales={analyticsOfTheDay.salesOfTheDay} />
       </div>
     </section>
   );

@@ -12,6 +12,9 @@ import { BsEye } from "react-icons/bs";
 import { BiPrinter } from "react-icons/bi";
 import { SaleDetail } from "./SaleDetail";
 import { useStore } from "../store/store";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import InvoicePDF from "./invoicePDF";
+import { formatCurrency } from "../helpers/formatCurrency";
 
 interface SalesTableProps {
   sales: Sale[];
@@ -37,7 +40,9 @@ export const SalesTable = ({
               <TableHeadCell className="dark:text-gray-100">ID</TableHeadCell>
             )}
             <TableHeadCell className="dark:text-gray-100">Fecha</TableHeadCell>
-            <TableHeadCell className="dark:text-gray-100">Cliente</TableHeadCell>
+            <TableHeadCell className="dark:text-gray-100">
+              Cliente
+            </TableHeadCell>
             <TableHeadCell className="dark:text-gray-100">Total</TableHeadCell>
             <TableHeadCell className="dark:text-gray-100">
               <span className="sr-only">Acciones</span>
@@ -46,10 +51,7 @@ export const SalesTable = ({
         </TableHead>
         <TableBody className="divide-y">
           {sales.map((sale, idx) => (
-            <TableRow
-              key={idx}
-              className="bg-white dark:bg-gray-800"
-            >
+            <TableRow key={idx} className="bg-white dark:bg-gray-800">
               {showId && (
                 <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100">
                   {sale.id}
@@ -60,16 +62,30 @@ export const SalesTable = ({
                   ? sale.created_at.toLocaleDateString()
                   : new Date(sale.created_at).toLocaleDateString()}
               </TableCell>
-              <TableCell className="dark:text-gray-300">{sale.customer_name}</TableCell>
-              <TableCell className="dark:text-gray-300">{sale.total_pay}</TableCell>
+              <TableCell className="dark:text-gray-300">
+                {sale.customer_name}
+              </TableCell>
+              <TableCell className="dark:text-gray-300">
+                {formatCurrency(sale.total_pay)}
+              </TableCell>
               <TableCell className="flex gap-2">
                 {showButtons === "both" && (
-                  <Button size="xs" color={"yellow"}>
-                    <BiPrinter size={20} />
-                  </Button>
+                  <PDFDownloadLink
+                    document={<InvoicePDF sale={sale || null} />}
+                    fileName={`${sale.id}`}
+                  >
+                    <Button
+                      size="xs"
+                      className="cursor-pointer"
+                      color={"yellow"}
+                    >
+                      <BiPrinter size={20} />
+                    </Button>
+                  </PDFDownloadLink>
                 )}
                 <Button
                   size="xs"
+                  className="cursor-pointer"
                   onClick={() => {
                     setSaleDetail(sale);
                   }}

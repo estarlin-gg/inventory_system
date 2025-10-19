@@ -5,7 +5,7 @@ export const ProtectedRoute = () => {
   const authResponse = useStore((state) => state.authResponse);
 
   if (!authResponse) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;

@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Credentials, credentialsSchema } from "../models/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
-import { useStore } from "../store/store";
+import { useAuth } from "../hooks/useAuth";
 
 export const RegisterPage = () => {
   const {
@@ -12,20 +12,20 @@ export const RegisterPage = () => {
     formState: { errors },
   } = useForm<Credentials>({ resolver: zodResolver(credentialsSchema) });
 
-  const re = useStore((state) => state.register);
+  const { register: reg } = useAuth();
 
-  const OnSubmit = (data: Credentials) => {
+  const OnSubmit = async (data: Credentials) => {
     try {
-      re(data);
+      await reg(data);
     } catch (error) {
       console.log(error);
     }
   };
 
   return (
-    <section className="w-screen h-screen flex justify-center items-center p-2 bg-gray-900 text-gray-100">
-      <div className="w-sm  flex flex-col gap-8 border border-gray-700 rounded-xl p-4 md:w-md lg:p-8  shadow-2xl dark:bg-gray-800">
-        <h2 className="text-3xl lg:text-4xl text-center font-semibold text-white">
+    <section className="w-screen h-screen flex justify-center items-center  p-2  text-black  dark:bg-gray-900 dark:text-gray-100">
+      <div className="w-sm  flex flex-col gap-8 border-[0.5px] border-gray-200 dark:border-gray-800 rounded-xl p-4 md:w-md lg:p-8  shadow-xl dark:bg-gray-800">
+        <h2 className="text-3xl lg:text-4xl text-center font-semibold dark:text-white">
           Regístrate
         </h2>
         <form
@@ -34,7 +34,7 @@ export const RegisterPage = () => {
         >
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="userName" className="text-gray-200">
+              <Label htmlFor="userName" className="text-black dark:text-gray-200">
                 Nombre
               </Label>
             </div>
@@ -53,7 +53,7 @@ export const RegisterPage = () => {
           </div>
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="email1" className="text-gray-200">
+              <Label htmlFor="email1" className="text-black dark:text-gray-200">
                 Correo electrónico
               </Label>
             </div>
@@ -72,7 +72,7 @@ export const RegisterPage = () => {
           </div>
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="password1" className="text-gray-200">
+              <Label htmlFor="password1" className="text-black dark:text-gray-200">
                 Contraseña
               </Label>
             </div>
@@ -91,10 +91,10 @@ export const RegisterPage = () => {
           </div>
 
           <div className="text-sm text-gray-300">
-            <span>
+            <span className="text-black dark:text-gray-200">
               ¿Ya tienes cuenta?{" "}
               <Link to={"/login"}>
-                <span className="text-blue-400 hover:text-blue-300 font-medium">
+                <span className="text-blue-600 hover:text-blue-300 font-medium">
                   Inicia sesión
                 </span>
               </Link>
@@ -104,7 +104,7 @@ export const RegisterPage = () => {
           <Button
             type="submit"
             color="blue"
-            className="bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-800"
+            className="bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-800 cursor-pointer"
           >
             Registrar
           </Button>
