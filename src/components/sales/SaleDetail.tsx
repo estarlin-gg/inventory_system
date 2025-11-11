@@ -11,8 +11,8 @@ import {
   TableHeadCell,
   TableRow,
 } from "flowbite-react";
-import { useStore } from "../store/store";
-import { formatCurrency } from "../helpers/formatCurrency";
+import { useStore } from "../../store/store";
+import { formatCurrency } from "../../helpers/formatCurrency";
 
 interface SaleDetailProps {
   openModal: boolean;
@@ -59,7 +59,7 @@ export const SaleDetail = ({ openModal, setOpenModal }: SaleDetailProps) => {
               {saleDetail.customer_name}
             </span>
           </div>
-          <div className="col-span-2 flex flex-col gap-2 overflow-x-auto" >
+          <div className="col-span-2 flex flex-col gap-2 overflow-x-auto">
             <span className="text-gray-700 dark:text-gray-300">Productos:</span>
             <Table>
               <TableHead className="dark:bg-gray-800">

@@ -1,23 +1,20 @@
-// import { useStore } from "../store/store";
-import { Stat } from "../components/Stat";
-
+import { Stat } from "../components/chart/Stat";
 import { MdAttachMoney, MdInventory, MdPointOfSale } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { Button } from "flowbite-react";
-import { SalesTable } from "../components/SaleTable";
-import { useAnalytics } from "../hooks/useAnalytics";
+import { SalesTable } from "../components/sales/SaleTable";
 import { formatCurrency } from "../helpers/formatCurrency";
 import { useHistoryQuery } from "../queries/useHistoryQuery";
-import { Loading } from "../components/Loading";
+import { Loading } from "../components/ui/Loading";
+import { useAnalytics } from "../hooks/useAnalytics";
 
 export const HomePage = () => {
-  const { analyticsOfTheDay } = useAnalytics();
+  const { totalIncome, totalSales, totalStock, salesOfTheDay } =
+    useAnalytics("day");
   const { historyQuery } = useHistoryQuery();
   if (historyQuery.isLoading) {
     return <Loading />;
   }
-
-  console.log(analyticsOfTheDay);
 
   return (
     <section>
@@ -28,19 +25,11 @@ export const HomePage = () => {
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4">
         <Stat
           title="ingresos del día"
-          data={formatCurrency(analyticsOfTheDay.incomeOfDay)}
+          data={formatCurrency(totalIncome)}
           icon={MdAttachMoney}
         />
-        <Stat
-          title="stocks vendidos"
-          data={analyticsOfTheDay.totalStock}
-          icon={MdInventory}
-        />
-        <Stat
-          title="ventas del día"
-          data={analyticsOfTheDay.salesOfTheDay.length}
-          icon={MdPointOfSale}
-        />
+        <Stat title="stocks vendidos" data={totalStock} icon={MdInventory} />
+        <Stat title="ventas del día" data={totalSales} icon={MdPointOfSale} />
       </div>
 
       <div className="w-full ">
@@ -50,7 +39,7 @@ export const HomePage = () => {
             <Button color={"alternative"}>Ver todas</Button>
           </Link>
         </div>
-        <SalesTable sales={analyticsOfTheDay.salesOfTheDay} />
+        <SalesTable sales={salesOfTheDay} />
       </div>
     </section>
   );

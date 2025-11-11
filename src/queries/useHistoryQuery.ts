@@ -9,12 +9,10 @@ export const useHistoryQuery = () => {
     queryKey: ["history"],
     queryFn: saleService.getSales,
     staleTime: 1000 * 60 * 60,
-
   });
 
   useEffect(() => {
     if (historyQuery.data) {
-      console.log(historyQuery.data);
       setHistory(historyQuery.data);
     }
   }, [setHistory, historyQuery.data]);

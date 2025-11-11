@@ -12,7 +12,8 @@ import { HiChartPie, HiShoppingBag, HiMenu, HiX } from "react-icons/hi";
 import { useState } from "react";
 import { SidebarLink } from "./SidebarLink";
 import { BiLogOut, BiMoney } from "react-icons/bi";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
+
 
 export const SideBar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);

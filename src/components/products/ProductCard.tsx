@@ -1,11 +1,11 @@
 import { Badge, Button, Card } from "flowbite-react";
 import { FaCartArrowDown, FaEdit, FaEraser, FaEye } from "react-icons/fa";
-import { useStore } from "../store/store";
 import { useNavigate } from "react-router-dom";
-import type { SalesProduct } from "../models/sale";
-import { useProducts } from "../queries/useProduct";
 import Swal from "sweetalert2";
-import type { Product } from "../models/product";
+import { useStore } from "../../store/store";
+import { useProducts } from "../../queries/useProduct";
+import { SalesProduct } from "../../models/sale";
+import { Product } from "../../models/product";
 
 interface ProductCardProps {
   product: Product | SalesProduct;

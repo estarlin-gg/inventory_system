@@ -8,6 +8,7 @@ import { useStore } from "../store/store";
 
 export const useSaleQuery = () => {
   const setSales = useStore((s) => s.setSales);
+  const resetSaleDetail = useStore((s) => s.resetSaleDetail);
   const saleQuery = useQuery({
     queryKey: ["sales"],
     queryFn: saleService.getSales,
@@ -24,6 +25,7 @@ export const useSaleQuery = () => {
       queryClient.invalidateQueries({ queryKey: ["sales"], exact: true });
       queryClient.invalidateQueries({ queryKey: ["products"], exact: true });
       queryClient.invalidateQueries({ queryKey: ["history"], exact: true });
+      resetSaleDetail();
       Swal.fire("Éxito", "Venta realizada con exito", "success");
     },
     onError: () => {

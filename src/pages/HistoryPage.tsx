@@ -2,11 +2,11 @@ import { Datepicker, TextInput } from "flowbite-react";
 import { BiSearch } from "react-icons/bi";
 
 import { useStore } from "../store/store";
-import { SalesTable } from "../components/SaleTable";
+import { SalesTable } from "../components/sales/SaleTable";
 
 import { useFilter } from "../hooks/useFilter";
 import { useHistoryQuery } from "../queries/useHistoryQuery";
-import { Loading } from "../components/Loading";
+import { Loading } from "../components/ui/Loading";
 
 export const HistoryPage = () => {
   const sales = useStore((state) => state.sales);
@@ -38,7 +38,12 @@ export const HistoryPage = () => {
         </div>
       </div>
       <div className="mt-8">
-        <SalesTable sales={filteredData} showId={true} showButtons="both" />
+        <SalesTable
+          sales={filteredData}
+          showId={true}
+          showButtons="both"
+          pagination={true}
+        />
       </div>
     </section>
   );

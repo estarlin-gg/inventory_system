@@ -8,11 +8,14 @@ import {
   TextInput,
 } from "flowbite-react";
 import { useForm } from "react-hook-form";
-import { ProductCreate, productCreateSchema } from "../models/product";
+
 import { Link, useNavigate } from "react-router-dom";
-import { useStore } from "../store/store";
+
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useProducts } from "../queries/useProduct";
+import { ProductCreate, productCreateSchema } from "../../models/product";
+import { useStore } from "../../store/store";
+import { useProducts } from "../../queries/useProduct";
+
 // import { Loading } from "./Loading";
 
 export const ProductForm = () => {

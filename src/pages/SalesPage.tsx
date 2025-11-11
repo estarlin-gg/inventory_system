@@ -1,12 +1,12 @@
 // import { useEffect } from "react";
 import { Badge, Button, TextInput } from "flowbite-react";
-import { ProductList } from "../components/ProductList";
+import { ProductList } from "../components/products/ProductList";
 
 import { useSearch } from "../hooks/useSearch";
 import { useStore } from "../store/store";
 import { FaClipboardList } from "react-icons/fa";
-import { ShoopList } from "../components/ShoopList";
-import { Loading } from "../components/Loading";
+import { ShoopList } from "../components/sales/ShoopList";
+import { Loading } from "../components/ui/Loading";
 import { useProducts } from "../queries/useProduct";
 
 export const SalesPage = () => {

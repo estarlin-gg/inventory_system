@@ -1,12 +1,12 @@
 // import { useEffect } from "react";
 import { Button, TextInput } from "flowbite-react";
-import { ProductList } from "../components/ProductList";
+import { ProductList } from "../components/products/ProductList";
 import { CgAdd } from "react-icons/cg";
 import { Link } from "react-router-dom";
 import { useSearch } from "../hooks/useSearch";
 import { useStore } from "../store/store";
 import { useProducts } from "../queries/useProduct";
-import { Loading } from "../components/Loading";
+import { Loading } from "../components/ui/Loading";
 
 export const InventoryPage = () => {
   // const getProducts = useStore((s) => s.getproducts);

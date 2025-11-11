@@ -1,6 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { Sale } from "../models/sale";
-import { formatCurrency } from "../helpers/formatCurrency";
+import { Sale } from "../../models/sale";
+import { formatCurrency } from "../../helpers/formatCurrency";
 
 const styles = StyleSheet.create({
   page: {
@@ -118,6 +118,7 @@ interface InvoicePDFProps {
 }
 
 export default function InvoicePDF({ sale }: InvoicePDFProps) {
+  if (!sale) return null; // evita error cuando montamos este componente y sale es null o undefined
   return (
     <Document>
       <Page size="A4" style={styles.page}>

@@ -5,11 +5,12 @@ import {
   DrawerItems,
   TextInput,
 } from "flowbite-react";
-import { useStore } from "../store/store";
+import { useStore } from "../../store/store";
 import { ShoppingItem } from "./ShoppingItem";
 import { useMemo } from "react";
-import { useSaleQuery } from "../queries/useSaleQuery";
+import { useSaleQuery } from "../../queries/useSaleQuery";
 import { BsListUl } from "react-icons/bs";
+import { formatCurrency } from "../../helpers/formatCurrency";
 
 interface DrawerProps {
   open: boolean;
@@ -20,6 +21,7 @@ export const ShoopList = ({ open, onClose }: DrawerProps) => {
   const shoppingList = useStore((state) => state.shoppingList);
   const saleDetail = useStore((state) => state.saleDetail);
   const handleCustomer = useStore((state) => state.handleCustomer);
+  const customerName = useStore((s) => s.saleDetail.customer_name);
 
   const totalPay = useMemo(
     () => shoppingList.reduce((acc, t) => acc + t.final_price, 0),
@@ -46,6 +48,7 @@ export const ShoopList = ({ open, onClose }: DrawerProps) => {
 
       <TextInput
         onChange={(e) => handleCustomer(e.target.value)}
+        value={customerName}
         placeholder="Nombre de cliente"
         className="my-2 "
       />
@@ -67,7 +70,9 @@ export const ShoopList = ({ open, onClose }: DrawerProps) => {
       <div className="w-full mt-auto px-2 py-2 px1 border-t border-gray-300 dark:border-gray-700">
         <div className="flex justify-between items-center">
           <h2 className="text-xl">Total a pagar</h2>
-          <span className="text-2xl font-medium">${totalPay.toFixed(2)}</span>
+          <span className="text-2xl font-medium">
+            {formatCurrency(totalPay)}
+          </span>
         </div>
         <div className="mt-3">
           <Button

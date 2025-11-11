@@ -5,12 +5,13 @@ import { LoginPage } from "../pages/LoginPage";
 import { MainLayout } from "../layouts/MainLayout";
 import { HomePage } from "../pages/HomePage";
 import { InventoryPage } from "../pages/InventoryPage";
-import { ProductForm } from "../components/ProductForm";
+
 import { SalesPage } from "../pages/SalesPage";
 import { HistoryPage } from "../pages/HistoryPage";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { BlockAuthRoute } from "./BlockAuthRoute";
+import { ProductForm } from "../components/products/ProductForm";
 
 export const routes = createBrowserRouter([
   {

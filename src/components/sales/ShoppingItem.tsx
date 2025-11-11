@@ -1,7 +1,8 @@
 import { Button } from "flowbite-react";
-import { SalesProduct } from "../models/sale";
+
 import { BiMinus, BiPlus, BiTrash } from "react-icons/bi";
-import { useStore } from "../store/store";
+import { useStore } from "../../store/store";
+import { SalesProduct } from "../../models/sale";
 
 interface ShoppingItemProps {
   product: SalesProduct;

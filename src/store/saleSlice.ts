@@ -13,12 +13,12 @@ export interface SaleState {
   handleShoppingList: () => void;
   sales: Sale[];
 
+  resetSaleDetail: () => void;
   sale: Sale;
   shoppingList: SalesProduct[];
   addShoppinList: (p: SalesProduct) => void;
   removeProduct: (id: number) => void;
   decreaseQuantity: (id: number) => void;
-  customerName: string;
   handleCustomer: (c: string) => void;
 }
 
@@ -32,7 +32,6 @@ export const useSaleSlice: StateCreator<SaleState & ProductState> = (
   isShoppingListopen: false,
   saleDetailModal: false,
   saleDetail: {
-    id: 0,
     customer_name: "",
     total_pay: 0,
     created_at: new Date(),
@@ -41,7 +40,6 @@ export const useSaleSlice: StateCreator<SaleState & ProductState> = (
   sales: [],
 
   sale: {} as Sale,
-  customerName: "Cliente Desconocido",
   shoppingList: [],
 
   setSaleDetail: (s) => set({ saleDetail: s, saleDetailModal: true }),
@@ -56,8 +54,8 @@ export const useSaleSlice: StateCreator<SaleState & ProductState> = (
     })),
 
   handleCustomer: (c) => {
-    set({ customerName: c });
-    get().updateSaleDetail({ customer_name: c });
+    const name = c.trim() === "" ? "Cliente Desconocido" : c;
+    get().updateSaleDetail({ customer_name: name });
   },
 
   handleShoppingList: () =>
@@ -141,5 +139,17 @@ export const useSaleSlice: StateCreator<SaleState & ProductState> = (
         total_pay: totalPay,
       },
     });
+  },
+  resetSaleDetail: () => {
+    set(() => ({
+      saleDetail: {
+        customer_name: "",
+        total_pay: 0,
+        created_at: new Date(),
+        sale_products: [],
+      },
+      isShoppingListopen: false,
+      shoppingList: [],
+    }));
   },
 });
