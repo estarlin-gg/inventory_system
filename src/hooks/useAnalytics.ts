@@ -19,7 +19,7 @@ interface Range {
 
 export const useAnalytics = (
   period: Period,
-  mode: Mode,
+  mode?: Mode,
   options?: {
     month?: number;
     year?: number;
@@ -27,6 +27,7 @@ export const useAnalytics = (
   }
 ) => {
   const sales = useStore((s) => s.sales);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const today = new Date();
 
   // FILTRADO según modo
