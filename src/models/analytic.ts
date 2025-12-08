@@ -24,7 +24,20 @@ export interface YearAnalytics {
 }
 
 export type Period = "day" | "week" | "month" | "year";
+export type Mode = "period" | "yearly" | "range" | "monthly";
 
+export interface Range {
+  startDate: Date;
+  endDate: Date;
+}
+
+export interface ProductAnalytics {
+  id: number;
+  product_name: string;
+  units: number;
+  total: number;
+  image?: string;
+}
 
 export interface FullAnalyticsResponse {
   day: DayAnalytics[];
@@ -32,3 +45,4 @@ export interface FullAnalyticsResponse {
   month: MonthAnalytics[];
   year: YearAnalytics[];
 }
+

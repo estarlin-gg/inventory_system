@@ -8,9 +8,10 @@ import {
 import { useStore } from "../../store/store";
 import { ShoppingItem } from "./ShoppingItem";
 import { useMemo } from "react";
-import { useSaleQuery } from "../../queries/useSaleQuery";
 import { BsListUl } from "react-icons/bs";
 import { formatCurrency } from "../../helpers/formatCurrency";
+
+import { useSaleActions } from "../../actions/sale-actions";
 
 interface DrawerProps {
   open: boolean;
@@ -21,14 +22,12 @@ export const ShoopList = ({ open, onClose }: DrawerProps) => {
   const shoppingList = useStore((state) => state.shoppingList);
   const saleDetail = useStore((state) => state.saleDetail);
   const handleCustomer = useStore((state) => state.handleCustomer);
-  const customerName = useStore((s) => s.saleDetail.customer_name);
+  const { handleCreateSale } = useSaleActions();
 
   const totalPay = useMemo(
     () => shoppingList.reduce((acc, t) => acc + t.final_price, 0),
     [shoppingList]
   );
-
-  const { createSaleMutation } = useSaleQuery();
 
   return (
     <Drawer
@@ -48,7 +47,6 @@ export const ShoopList = ({ open, onClose }: DrawerProps) => {
 
       <TextInput
         onChange={(e) => handleCustomer(e.target.value)}
-        value={customerName}
         placeholder="Nombre de cliente"
         className="my-2 "
       />
@@ -78,10 +76,7 @@ export const ShoopList = ({ open, onClose }: DrawerProps) => {
           <Button
             size="lg"
             className="w-full"
-            onClick={() => {
-              console.log(saleDetail);
-              createSaleMutation.mutate(saleDetail);
-            }}
+            onClick={() => handleCreateSale(saleDetail)}
           >
             Pagar
           </Button>

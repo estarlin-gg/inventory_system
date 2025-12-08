@@ -1,8 +1,8 @@
 import { Datepicker, Select } from "flowbite-react";
 import { useState } from "react";
+import { Mode, Period } from "../../models/analytic";
 
-export type Period = "day" | "week" | "month" | "year";
-export type Mode = "period" | "yearly" | "range" | "monthly";
+
 
 interface AnalyticsSelectProps {
   period: Period;

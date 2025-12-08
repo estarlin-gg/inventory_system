@@ -3,9 +3,10 @@ import { FaCartArrowDown, FaEdit, FaEraser, FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useStore } from "../../store/store";
-import { useProducts } from "../../queries/useProduct";
+
 import { SalesProduct } from "../../models/sale";
 import { Product } from "../../models/product";
+import { useProductActions } from "../../actions/product-actions";
 
 interface ProductCardProps {
   product: Product | SalesProduct;
@@ -15,7 +16,7 @@ interface ProductCardProps {
 export const ProductCard = ({ product, type }: ProductCardProps) => {
   const addShopList = useStore((s) => s.addShoppinList);
   const setSelectedProduct = useStore((s) => s.setSelectedProduct);
-  const { deleteProductMutation } = useProducts();
+  const { handleDeleteProduct } = useProductActions();
   const navigate = useNavigate();
 
   return (
@@ -103,7 +104,7 @@ export const ProductCard = ({ product, type }: ProductCardProps) => {
                 denyButtonText: `No`,
               }).then((result) => {
                 if (result.isConfirmed) {
-                  deleteProductMutation.mutate(product.product_id);
+                  handleDeleteProduct(product.product_id);
                 }
               });
             }}

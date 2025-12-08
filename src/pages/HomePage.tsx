@@ -9,7 +9,7 @@ import { Loading } from "../components/ui/Loading";
 import { useAnalytics } from "../hooks/useAnalytics";
 
 export const HomePage = () => {
-  const { totalIncome, totalSales, totalStock, salesOfTheDay } =
+  const { incomeToday, salesToday, stocksToday, salesOfTheDay } =
     useAnalytics("day");
   const { historyQuery } = useHistoryQuery();
   if (historyQuery.isLoading) {
@@ -25,11 +25,11 @@ export const HomePage = () => {
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4">
         <Stat
           title="ingresos del día"
-          data={formatCurrency(totalIncome)}
+          data={formatCurrency(incomeToday)}
           icon={MdAttachMoney}
         />
-        <Stat title="stocks vendidos" data={totalStock} icon={MdInventory} />
-        <Stat title="ventas del día" data={totalSales} icon={MdPointOfSale} />
+        <Stat title="stocks vendidos" data={stocksToday} icon={MdInventory} />
+        <Stat title="ventas del día" data={salesToday} icon={MdPointOfSale} />
       </div>
 
       <div className="w-full ">

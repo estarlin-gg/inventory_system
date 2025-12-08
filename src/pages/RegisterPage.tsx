@@ -9,6 +9,7 @@ export const RegisterPage = () => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<Credentials>({ resolver: zodResolver(credentialsSchema) });
 
@@ -16,7 +17,11 @@ export const RegisterPage = () => {
 
   const OnSubmit = async (data: Credentials) => {
     try {
-      await reg(data);
+      const ok = await reg(data);
+
+      if (ok) {
+        reset();
+      }
     } catch (error) {
       console.log(error);
     }
@@ -34,7 +39,10 @@ export const RegisterPage = () => {
         >
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="userName" className="text-black dark:text-gray-200">
+              <Label
+                htmlFor="userName"
+                className="text-black dark:text-gray-200"
+              >
                 Nombre
               </Label>
             </div>
@@ -72,7 +80,10 @@ export const RegisterPage = () => {
           </div>
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="password1" className="text-black dark:text-gray-200">
+              <Label
+                htmlFor="password1"
+                className="text-black dark:text-gray-200"
+              >
                 Contraseña
               </Label>
             </div>

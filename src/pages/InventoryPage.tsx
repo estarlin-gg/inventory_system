@@ -5,7 +5,7 @@ import { CgAdd } from "react-icons/cg";
 import { Link } from "react-router-dom";
 import { useSearch } from "../hooks/useSearch";
 import { useStore } from "../store/store";
-import { useProducts } from "../queries/useProduct";
+import { useProductQuery } from "../queries/useProductQuery";
 import { Loading } from "../components/ui/Loading";
 
 export const InventoryPage = () => {
@@ -13,11 +13,11 @@ export const InventoryPage = () => {
   const setSelectedProduct = useStore((s) => s.setSelectedProduct);
   // const products = useStore((s) => s.products);
   const { filteredP, setSearch } = useSearch();
-  const { productsQuery } = useProducts();
-
+  const { productsQuery } = useProductQuery();
+  
   if (productsQuery.isLoading) return <Loading />;
   // if (productsQuery.isLoading) return <p>Cargando...</p>;
-  // if (productsQuery.isError) return <p>Error al cargar productos</p>;
+  if (productsQuery.isError) return <p>Error al cargar productos</p>;
 
   return (
     <div className="flex flex-col gap-4">

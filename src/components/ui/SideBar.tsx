@@ -7,13 +7,14 @@ import {
   SunIcon,
   MoonIcon,
   useThemeMode,
+  Avatar,
 } from "flowbite-react";
 import { HiChartPie, HiShoppingBag, HiMenu, HiX } from "react-icons/hi";
 import { useState } from "react";
 import { SidebarLink } from "./SidebarLink";
 import { BiLogOut, BiMoney } from "react-icons/bi";
 import { useAuth } from "../../hooks/useAuth";
-
+import { useStore } from "../../store/store";
 
 export const SideBar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -64,6 +65,8 @@ export const SideBar = () => {
 const SidebarContent = () => {
   const { computedMode, toggleMode } = useThemeMode();
   const { logout } = useAuth();
+  const userData = useStore((u) => u.authResponse);
+ 
 
   return (
     <SidebarItems className="h-full flex flex-col justify-between">
@@ -85,6 +88,12 @@ const SidebarContent = () => {
           onClick={toggleMode}
         >
           <span>{computedMode === "dark" ? "Oscuro" : "Claro"}</span>
+        </SidebarItem>
+        <SidebarItem className="px-2 cursor-pointer">
+          <div className="flex items-center gap-3 w-full  relative -left-4">
+            <Avatar rounded size="sm" className="p-0 m-0" />
+            <span>{userData?.user_metadata.display_name}</span>
+          </div>
         </SidebarItem>
 
         <SidebarItem

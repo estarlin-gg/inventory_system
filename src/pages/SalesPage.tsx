@@ -7,14 +7,14 @@ import { useStore } from "../store/store";
 import { FaClipboardList } from "react-icons/fa";
 import { ShoopList } from "../components/sales/ShoopList";
 import { Loading } from "../components/ui/Loading";
-import { useProducts } from "../queries/useProduct";
+import { useProductQuery } from "../queries/useProductQuery";
 
 export const SalesPage = () => {
   const isShoppingListopen = useStore((s) => s.isShoppingListopen);
   const handleShoppingList = useStore((s) => s.handleShoppingList);
   const shoppingList = useStore((s) => s.shoppingList);
   const { filteredP, setSearch } = useSearch();
-  const { productsQuery } = useProducts();
+  const { productsQuery } = useProductQuery();
 
   if (productsQuery.isLoading) return <Loading />;
   return (

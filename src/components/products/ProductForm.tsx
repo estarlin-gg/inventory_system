@@ -3,23 +3,19 @@ import {
   Button,
   HelperText,
   Label,
-  // Select,
   Textarea,
   TextInput,
 } from "flowbite-react";
 import { useForm } from "react-hook-form";
-
 import { Link, useNavigate } from "react-router-dom";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductCreate, productCreateSchema } from "../../models/product";
 import { useStore } from "../../store/store";
-import { useProducts } from "../../queries/useProduct";
 
-// import { Loading } from "./Loading";
+import { useProductActions } from "../../actions/product-actions";
 
 export const ProductForm = () => {
-  const { createProductMutation, updateProductMutation } = useProducts();
+  const { handleCreateProduct, handleUpdateProduct } = useProductActions();
   const selectedProduct = useStore((s) => s.selectedProduct);
   const navigate = useNavigate();
   const {
@@ -34,12 +30,9 @@ export const ProductForm = () => {
   const onSubmit = (data: ProductCreate) => {
     try {
       if (selectedProduct) {
-        updateProductMutation.mutate({
-          id: selectedProduct.product_id,
-          p: data,
-        });
+        handleUpdateProduct(selectedProduct.product_id, data);
       } else {
-        createProductMutation.mutate(data);
+        handleCreateProduct(data);
       }
       // if (createProductMutation.isPending || updateProductMutation.isPending) {
       //   return <Loading />;

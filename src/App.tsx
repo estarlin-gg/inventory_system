@@ -6,9 +6,12 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./queries/queryClient";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeInitializer } from "./hooks/ThemeInitializer";
+import { ToastContainer } from "react-toastify";
+import { useThemeMode } from "flowbite-react";
 
 function App() {
   const loading = useStore((state) => state.isLoading);
+  const { computedMode } = useThemeMode();
 
   useAuthListener();
   return (
@@ -18,6 +21,7 @@ function App() {
       {/* {loading ? <Loading /> : <Outlet />} */}
       {loading && <Loading />}
       <Outlet />
+      <ToastContainer theme={computedMode}  />
     </QueryClientProvider>
   );
 }

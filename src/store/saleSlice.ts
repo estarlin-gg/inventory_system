@@ -54,8 +54,7 @@ export const useSaleSlice: StateCreator<SaleState & ProductState> = (
     })),
 
   handleCustomer: (c) => {
-    const name = c.trim() === "" ? "Cliente Desconocido" : c;
-    get().updateSaleDetail({ customer_name: name });
+    get().updateSaleDetail({ customer_name: c });
   },
 
   handleShoppingList: () =>

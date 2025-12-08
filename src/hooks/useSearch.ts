@@ -1,27 +1,24 @@
-import { useEffect, useState } from "react";
-import { useStore } from "../store/store";
+import { useState, useMemo } from "react";
+import { useProductQuery } from "../queries/useProductQuery";
 
 export const useSearch = () => {
-  const products = useStore((state) => state.products);
-  // const sales = useStore((state) => state.sales);
+  const { productsQuery } = useProductQuery();
   const [search, setSearch] = useState("");
-  const [filteredP, setFilteredP] = useState(products);
   const [history, setHistory] = useState("");
 
-  useEffect(() => {
-    const filtered = products.filter((product) =>
+  const filteredP = useMemo(() => {
+    const data = productsQuery.data ?? [];
+
+    return data.filter((product) =>
       product.product_name.toLowerCase().includes(search.toLowerCase())
     );
-    // const historyf = sales.;
-   
-    setFilteredP(filtered);
-  }, [search, products, history]);
+  }, [search, productsQuery.data]);
 
   return {
     search,
     setSearch,
     filteredP,
     history,
-    setHistory
+    setHistory,
   };
 };

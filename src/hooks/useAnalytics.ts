@@ -8,14 +8,7 @@ import {
 } from "date-fns";
 import { es } from "date-fns/locale";
 import { useStore } from "../store/store";
-
-export type Period = "day" | "week" | "month" | "year";
-export type Mode = "period" | "yearly" | "range" | "monthly";
-
-interface Range {
-  startDate: Date;
-  endDate: Date;
-}
+import { Mode, Period, ProductAnalytics, Range } from "../models/analytic";
 
 export const useAnalytics = (
   period: Period,
@@ -30,7 +23,9 @@ export const useAnalytics = (
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const today = new Date();
 
-  // FILTRADO según modo
+  // ===========================
+  // FILTRADO
+  // ===========================
   const filteredSales = useMemo(() => {
     switch (mode) {
       case "period":
@@ -51,9 +46,8 @@ export const useAnalytics = (
             return sales.filter((s) =>
               isSameYear(new Date(s.created_at), today)
             );
-          default:
-            return sales;
         }
+        return sales;
 
       case "monthly":
         if (options?.month != null && options?.year != null) {
@@ -89,7 +83,9 @@ export const useAnalytics = (
     }
   }, [mode, period, sales, options, today]);
 
-  // AGRUPADO PARA GRÁFICO
+  // ===========================
+  // AGRUPADO PARA GRÁFICOS
+  // ===========================
   const groupedData = useMemo(() => {
     const groups: Record<string, number> = {};
 
@@ -137,10 +133,52 @@ export const useAnalytics = (
     }));
   }, [filteredSales, mode, period]);
 
-  //CALCULOS TOTALES
-  const totalIncome = filteredSales.reduce((sum, s) => sum + s.total_pay, 0);
+  // ===========================
+  // PRODUCTOS VENDIDOS (TIPADO)
+  // ===========================
+  const productsAnalytics: ProductAnalytics[] = useMemo(() => {
+    const map: Record<
+      number,
+      {
+        id: number;
+        product_name: string;
+        units: number;
+        total: number;
+      }
+    > = {};
+
+    filteredSales.forEach((sale) => {
+      sale.sale_products.forEach((p) => {
+        if (!map[p.product_id]) {
+          map[p.product_id] = {
+            id: p.product_id,
+            product_name: p.product_name,
+            units: 0,
+            total: 0,
+          };
+        }
+
+        map[p.product_id].units += p.quantity;
+        map[p.product_id].total += p.quantity * p.price;
+      });
+    });
+
+    return Object.values(map);
+  }, [filteredSales]);
+
+  // ===========================
+  // TOP 5 PRODUCTOS
+  // ===========================
+  const top5Products: ProductAnalytics[] = useMemo(() => {
+    return [...productsAnalytics].sort((a, b) => b.units - a.units).slice(0, 5);
+  }, [productsAnalytics]);
+
+  // ===========================
+  // TOTALES
+  // ===========================
+  const totalIncome = filteredSales.reduce((s, t) => s + t.total_pay, 0);
   const totalStock = filteredSales.reduce(
-    (sum, s) => sum + s.sale_products.reduce((sub, p) => sub + p.quantity, 0),
+    (s, sale) => s + sale.sale_products.reduce((acc, p) => acc + p.quantity, 0),
     0
   );
   const totalSales = filteredSales.length;
@@ -149,12 +187,24 @@ export const useAnalytics = (
     isSameDay(new Date(sale.created_at), today)
   );
 
+  const incomeToday = salesOfTheDay.reduce((acc, t) => acc + t.total_pay, 0);
+  const salesToday = salesOfTheDay.length;
+  const stocksToday = salesOfTheDay.reduce(
+    (acc, t) => acc + t.sale_products.reduce((a, b) => a + b.quantity, 0),
+    0
+  );
+
   return {
     filteredSales,
     groupedData,
     totalIncome,
     totalStock,
     totalSales,
+    incomeToday,
+    stocksToday,
+    salesToday,
     salesOfTheDay,
+    productsAnalytics,
+    top5Products,
   };
 };
