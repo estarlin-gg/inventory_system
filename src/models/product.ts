@@ -10,7 +10,7 @@ export const productCreateSchema = z.object({
     .number()
     .int()
     .nonnegative({ message: "El stock no puede ser negativo" }),
-  discount: z.number().min(0).max(100).default(0),
+  discount: z.number().min(0).max(100).optional(),
 });
 
 export const productSchema = productCreateSchema.extend({

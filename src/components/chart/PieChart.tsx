@@ -24,7 +24,7 @@ export const AnalyticsPieChart = ({
       <ResponsiveContainer>
         <PieChart>
           <Tooltip
-            formatter={(value, name, props) => {
+            formatter={(value, _name, props) => {
               const percent = ((value as number) / total) * 100;
               return [`${value} unidades (${percent.toFixed(1)}%)`, props.payload.name];
             }}
