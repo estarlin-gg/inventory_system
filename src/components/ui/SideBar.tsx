@@ -13,6 +13,7 @@ import { HiChartPie, HiShoppingBag, HiMenu, HiX } from "react-icons/hi";
 import { useState } from "react";
 import { SidebarLink } from "./SidebarLink";
 import { BiLogOut, BiMoney } from "react-icons/bi";
+import { HiTruck } from "react-icons/hi";
 import { useAuth } from "../../hooks/useAuth";
 import { useStore } from "../../store/store";
 
@@ -75,10 +76,12 @@ const SidebarContent = () => {
           <SidebarLink title="Dashboard" url="/home" />
           <SidebarLink title="Historial" url="/history" />
           <SidebarLink title="Análisis" url="/analytics" />
+          <SidebarLink title="Finanzas" url="/financial" />
         </SidebarCollapse>
 
         <SidebarLink title="Ventas" url="/sales" icon={BiMoney} />
         <SidebarLink title="Inventario" url="/inventory" icon={HiShoppingBag} />
+        <SidebarLink title="Proveedores" url="/suppliers" icon={HiTruck} />
       </SidebarItemGroup>
 
       <SidebarItemGroup>

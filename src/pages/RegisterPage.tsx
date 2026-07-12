@@ -4,6 +4,7 @@ import { Credentials, credentialsSchema } from "../models/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { useStore } from "../store/store";
 
 export const RegisterPage = () => {
   const {
@@ -14,6 +15,7 @@ export const RegisterPage = () => {
   } = useForm<Credentials>({ resolver: zodResolver(credentialsSchema) });
 
   const { register: reg } = useAuth();
+  const isLoading = useStore((s) => s.isLoading);
 
   const OnSubmit = async (data: Credentials) => {
     try {
@@ -51,6 +53,7 @@ export const RegisterPage = () => {
               type="text"
               color={errors.userName ? "failure" : "gray"}
               placeholder="Escribe tu nombre"
+              disabled={isLoading}
               {...register("userName")}
             />
             <HelperText>
@@ -70,6 +73,7 @@ export const RegisterPage = () => {
               type="email"
               placeholder="example@example.com"
               color={errors.email ? "failure" : "gray"}
+              disabled={isLoading}
               {...register("email")}
             />
             <HelperText className="text-red-400">
@@ -92,6 +96,7 @@ export const RegisterPage = () => {
               type="password"
               placeholder="******"
               color={errors.password ? "failure" : "gray"}
+              disabled={isLoading}
               {...register("password")}
             />
             <HelperText className="text-red-400">
@@ -115,9 +120,10 @@ export const RegisterPage = () => {
           <Button
             type="submit"
             color="blue"
+            disabled={isLoading}
             className="bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-800 cursor-pointer"
           >
-            Registrar
+            {isLoading ? "Registrando..." : "Registrar"}
           </Button>
         </form>
       </div>

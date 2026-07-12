@@ -11,6 +11,13 @@ export const ShoppingItem = ({ product }: ShoppingItemProps) => {
   const removeProduct = useStore((state) => state.removeProduct);
   const decreaseQuantity = useStore((s) => s.decreaseQuantity);
   const addToShop = useStore((state) => state.addShoppinList);
+  const products = useStore((s) => s.products);
+
+  const actualProduct = products.find(
+    (p) => p.product_id === product.product_id
+  );
+  const availableStock = actualProduct?.stock ?? 0;
+  const canIncrease = product.quantity < availableStock;
 
   return (
     <div className="flex justify-between shadow-xs items-center gap-3 py-3 px-2 border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -48,6 +55,7 @@ export const ShoppingItem = ({ product }: ShoppingItemProps) => {
           </span>
 
           <Button
+            disabled={!canIncrease}
             onClick={() => {
               addToShop({ ...product });
             }}

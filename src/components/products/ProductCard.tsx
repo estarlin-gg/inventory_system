@@ -69,12 +69,13 @@ export const ProductCard = ({ product, type }: ProductCardProps) => {
           <Button
             color="green"
             className="w-full"
+            disabled={product.stock <= 0}
             onClick={() => {
               addShopList({ ...product, quantity: 1 });
             }}
           >
             <FaCartArrowDown size={20} className="mr-2" />
-            Agregar
+            {product.stock <= 0 ? "Sin stock" : "Agregar"}
           </Button>
           <Button color="blue" className="w-full">
             <FaEye size={20} className="mr-2" />

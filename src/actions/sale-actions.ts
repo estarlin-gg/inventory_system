@@ -9,6 +9,7 @@ export const useSaleActions = () => {
   const { saleQuery, createSaleMutation } = useSaleQuery();
   const resetSaleDetail = useStore((s) => s.resetSaleDetail);
   const setLoading = useStore((s) => s.setLoading);
+  const products = useStore((s) => s.products);
 
 
   const handleCreateSale = (sale: Sale) => {
@@ -17,8 +18,20 @@ export const useSaleActions = () => {
       return;
     }
     if (sale.customer_name.trim() === "") {
-      sale.customer_name = "Cliente Desconocido";
+      toast.error("Debe ingresar el nombre del cliente.");
+      return;
     }
+
+    for (const item of sale.sale_products) {
+      const actual = products.find((p) => p.product_id === item.product_id);
+      if (!actual || item.quantity > actual.stock) {
+        toast.error(
+          `Stock insuficiente para "${item.product_name}". Disponible: ${actual?.stock ?? 0}`
+        );
+        return;
+      }
+    }
+
     setLoading(true);
 
     createSaleMutation.mutate(sale, {

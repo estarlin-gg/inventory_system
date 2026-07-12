@@ -22,7 +22,7 @@ export const login = async (c: LoginCredentials) => {
 };
 
 export const register = async (c: Credentials) => {
-  const res = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: c.email,
     password: c.password,
     options: {
@@ -32,7 +32,9 @@ export const register = async (c: Credentials) => {
     },
   });
 
-  return res;
+  if (error) throw error;
+
+  return { data, error };
 };
 
 export const logout = async () => {

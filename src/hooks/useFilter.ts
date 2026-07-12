@@ -6,17 +6,22 @@ export const useFilter = (originalData: Sale[]) => {
   const [date, setDate] = useState<Date | null>(null);
 
   const filteredData = useMemo(() => {
-    return originalData.filter((sale) => {
-      const matchesQuery =
-        sale.id!.toString().includes(query.toLowerCase()) ||
-        sale.customer_name.toLowerCase().includes(query.toLowerCase());
+    return originalData
+      .filter((sale) => {
+        const matchesQuery =
+          sale.id!.toString().includes(query.toLowerCase()) ||
+          sale.customer_name.toLowerCase().includes(query.toLowerCase());
 
-      const matchesDate = date
-        ? new Date(sale.created_at).toDateString() === date.toDateString()
-        : true;
+        const matchesDate = date
+          ? new Date(sale.created_at).toDateString() === date.toDateString()
+          : true;
 
-      return matchesQuery && matchesDate;
-    });
+        return matchesQuery && matchesDate;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
   }, [originalData, query, date]);
 
   return {

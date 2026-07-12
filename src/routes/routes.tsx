@@ -9,9 +9,12 @@ import { InventoryPage } from "../pages/InventoryPage";
 import { SalesPage } from "../pages/SalesPage";
 import { HistoryPage } from "../pages/HistoryPage";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
+import { SuppliersPage } from "../pages/SuppliersPage";
+import { FinancialPage } from "../pages/FinancialPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { BlockAuthRoute } from "./BlockAuthRoute";
 import { ProductForm } from "../components/products/ProductForm";
+import { SupplierForm } from "../components/suppliers/SupplierForm";
 
 export const routes = createBrowserRouter([
   {
@@ -46,7 +49,16 @@ export const routes = createBrowserRouter([
               },
               { path: "history", element: <HistoryPage /> },
               { path: "analytics", element: <AnalyticsPage /> },
+              { path: "financial", element: <FinancialPage /> },
               { path: "sales", element: <SalesPage /> },
+              {
+                path: "suppliers",
+                children: [
+                  { index: true, element: <SuppliersPage /> },
+                  { path: "create", element: <SupplierForm /> },
+                  { path: ":id", element: <SupplierForm /> },
+                ],
+              },
 
               { path: "*", element: <Navigate to="/home" replace /> },
             ],

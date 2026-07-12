@@ -33,6 +33,7 @@ export const useAuth = () => {
   };
 
   const handleRegister = async (credentials: Credentials): Promise<boolean> => {
+    setLoading(true);
     try {
       const { error } = await register(credentials);
 
@@ -49,6 +50,8 @@ export const useAuth = () => {
       const error = supabaseError(e);
       toast.error(error);
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 

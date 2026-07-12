@@ -40,7 +40,7 @@ export const InventoryPage = () => {
           </Button>
         </Link>
       </div>
-      <ProductList data={filteredP} type="edit" />
+      <ProductList data={filteredP} type="edit" emptyMessage="No hay productos en el inventario" />
     </div>
   );
 };

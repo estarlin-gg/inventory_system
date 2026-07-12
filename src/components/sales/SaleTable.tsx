@@ -36,7 +36,7 @@ export const SalesTable = ({
   const itemsPerPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(sales.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(sales.length / itemsPerPage));
 
   const currentSales = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -48,65 +48,73 @@ export const SalesTable = ({
 
   return (
     <div className="overflow-x-auto">
-      <Table striped>
-        <TableHead>
-          <TableRow className="bg-gray-100 dark:bg-gray-900">
-            {showId && (
-              <TableHeadCell className="dark:text-gray-100">ID</TableHeadCell>
-            )}
-            <TableHeadCell className="dark:text-gray-100">Fecha</TableHeadCell>
-            <TableHeadCell className="dark:text-gray-100">
-              Cliente
-            </TableHeadCell>
-            <TableHeadCell className="dark:text-gray-100">Total</TableHeadCell>
-            <TableHeadCell className="dark:text-gray-100">
-              <span className="sr-only">Acciones</span>
-            </TableHeadCell>
-          </TableRow>
-        </TableHead>
+      {sales.length === 0 ? (
+        <p className="text-center text-gray-500 dark:text-gray-400 py-10">
+          No hay ventas para mostrar
+        </p>
+      ) : (
+        <>
+          <Table striped>
+            <TableHead>
+              <TableRow className="bg-gray-100 dark:bg-gray-900">
+                {showId && (
+                  <TableHeadCell className="dark:text-gray-100">ID</TableHeadCell>
+                )}
+                <TableHeadCell className="dark:text-gray-100">Fecha</TableHeadCell>
+                <TableHeadCell className="dark:text-gray-100">
+                  Cliente
+                </TableHeadCell>
+                <TableHeadCell className="dark:text-gray-100">Total</TableHeadCell>
+                <TableHeadCell className="dark:text-gray-100">
+                  <span className="sr-only">Acciones</span>
+                </TableHeadCell>
+              </TableRow>
+            </TableHead>
 
-        <TableBody className="divide-y">
-          {currentSales.map((sale, idx) => (
-            <TableRow key={idx} className="bg-white dark:bg-gray-800">
-              {showId && (
-                <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100">
-                  {sale.id}
-                </TableCell>
-              )}
-              <TableCell className="dark:text-gray-300">
-                {sale.created_at instanceof Date
-                  ? sale.created_at.toLocaleDateString()
-                  : new Date(sale.created_at).toLocaleDateString()}
-              </TableCell>
-              <TableCell className="dark:text-gray-300">
-                {sale.customer_name}
-              </TableCell>
-              <TableCell className="dark:text-gray-300">
-                {formatCurrency(sale.total_pay)}
-              </TableCell>
-              <TableCell className="flex gap-2">
-                {showButtons === "both" && <InvoiceButton sale={sale} />}
-                <Button
-                  size="xs"
-                  className="cursor-pointer"
-                  onClick={() => setSaleDetail(sale)}
-                >
-                  <BsEye size={20} />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {pagination && (
-        <div className="flex justify-center mt-4">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-            showIcons
-          />
-        </div>
+            <TableBody className="divide-y">
+              {currentSales.map((sale, idx) => (
+                <TableRow key={idx} className="bg-white dark:bg-gray-800">
+                  {showId && (
+                    <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100">
+                      {sale.id}
+                    </TableCell>
+                  )}
+                  <TableCell className="dark:text-gray-300">
+                    {sale.created_at instanceof Date
+                      ? sale.created_at.toLocaleDateString()
+                      : new Date(sale.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="dark:text-gray-300">
+                    {sale.customer_name}
+                  </TableCell>
+                  <TableCell className="dark:text-gray-300">
+                    {formatCurrency(sale.total_pay)}
+                  </TableCell>
+                  <TableCell className="flex gap-2">
+                    {showButtons === "both" && <InvoiceButton sale={sale} />}
+                    <Button
+                      size="xs"
+                      className="cursor-pointer"
+                      onClick={() => setSaleDetail(sale)}
+                    >
+                      <BsEye size={20} />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {pagination && totalPages > 1 && (
+            <div className="flex justify-center mt-4">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={onPageChange}
+                showIcons
+              />
+            </div>
+          )}
+        </>
       )}
 
       <SaleDetail openModal={saleDetailModal} setOpenModal={setDetailModal} />

@@ -65,10 +65,20 @@ export const useSaleSlice: StateCreator<SaleState & ProductState> = (
 
   addShoppinList: (pr) => {
     const currentList = get().shoppingList;
+    const products = get().products;
+    const actualProduct = products.find((p) => p.product_id === pr.product_id);
+
+    if (!actualProduct || actualProduct.stock <= 0) {
+      return;
+    }
+
     const exists = currentList.find((p) => p.product_id === pr.product_id);
     let newList: SalesProduct[];
 
     if (exists) {
+      if (exists.quantity >= actualProduct.stock) {
+        return;
+      }
       newList = currentList.map((p) =>
         p.product_id === pr.product_id
           ? {

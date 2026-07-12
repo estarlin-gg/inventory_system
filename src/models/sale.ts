@@ -10,6 +10,7 @@ export const saleProductDtoSchema = z.object({
   product_name: z.string().min(1, "El nombre del producto es obligatorio"),
   quantity: z.number().int().positive(),
   price: z.number().nonnegative(),
+  cost: z.number().nonnegative().default(0),
 });
 
 export const saleSchema = z.object({

@@ -183,6 +183,17 @@ export const useAnalytics = (
   );
   const totalSales = filteredSales.length;
 
+  const totalInvestment = filteredSales.reduce(
+    (s, sale) =>
+      s +
+      sale.sale_products.reduce(
+        (acc, p) => acc + (p.cost ?? 0) * p.quantity,
+        0
+      ),
+    0
+  );
+  const totalProfit = totalIncome - totalInvestment;
+
   const salesOfTheDay = sales.filter((sale) =>
     isSameDay(new Date(sale.created_at), today)
   );
@@ -200,6 +211,8 @@ export const useAnalytics = (
     totalIncome,
     totalStock,
     totalSales,
+    totalInvestment,
+    totalProfit,
     incomeToday,
     stocksToday,
     salesToday,

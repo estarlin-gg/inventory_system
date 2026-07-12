@@ -31,6 +31,7 @@ const createSale = async (sale: Sale): Promise<Sale> => {
     product_id: p.product_id,
     product_name: p.product_name, 
     price: p.price,
+    cost: p.cost ?? 0,
     quantity: p.quantity,
   }));
 

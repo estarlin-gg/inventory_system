@@ -39,6 +39,17 @@ export interface ProductAnalytics {
   image?: string;
 }
 
+export interface ProductFinancial {
+  id: number;
+  product_name: string;
+  cost: number;
+  price: number;
+  units: number;
+  totalRevenue: number;
+  totalCost: number;
+  profit: number;
+}
+
 export interface FullAnalyticsResponse {
   day: DayAnalytics[];
   week: WeekAnalytics[];

@@ -6,6 +6,9 @@ export const productCreateSchema = z.object({
   description: z.string().optional(),
   // category_id: z.number().int().positive().nullable().optional().default(null),
   price: z.number().nonnegative({ message: "El precio no puede ser negativo" }),
+  cost: z
+    .number()
+    .nonnegative({ message: "El costo no puede ser negativo" }),
   stock: z
     .number()
     .int()

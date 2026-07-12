@@ -23,7 +23,7 @@ export const ProductForm = () => {
     register,
     formState: { errors },
   } = useForm<ProductCreate>({
-    defaultValues: selectedProduct ?? {},
+    defaultValues: selectedProduct ?? { cost: 0 },
     resolver: zodResolver(productCreateSchema),
   });
 
@@ -77,6 +77,18 @@ export const ProductForm = () => {
           />
           <HelperText>
             {errors.price && <span>{errors.price.message}</span>}
+          </HelperText>
+        </div>
+        <div>
+          <Label className="text-lg">Costo:</Label>
+          <TextInput
+            type="number"
+            color={errors.cost ? "failure" : "gray"}
+            placeholder="Costo de adquisición"
+            {...register("cost", { valueAsNumber: true })}
+          />
+          <HelperText>
+            {errors.cost && <span>{errors.cost.message}</span>}
           </HelperText>
         </div>
         <div>

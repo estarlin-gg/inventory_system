@@ -43,7 +43,7 @@ export const SalesPage = () => {
         </Button>
       </div>
       <ShoopList open={isShoppingListopen} onClose={handleShoppingList} />
-      <ProductList data={filteredP} type="sale" />
+      <ProductList data={filteredP} type="sale" emptyMessage="No hay productos disponibles para vender" />
     </div>
   );
 };
