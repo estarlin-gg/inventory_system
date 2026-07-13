@@ -3,6 +3,7 @@ import { productService } from "../services/productService";
 import { useStore } from "../store/store";
 import { useEffect } from "react";
 import { ProductCreate } from "../models/product";
+import { offlineService, networkService } from "../services/offline";
 
 export const useProductQuery = () => {
   const setProducts = useStore((s) => s.setProducts);
@@ -10,7 +11,14 @@ export const useProductQuery = () => {
 
   const productsQuery = useQuery({
     queryKey: ["products"],
-    queryFn: productService.getProducts,
+    queryFn: async () => {
+      if (networkService.isOnline) {
+        const data = await productService.getProducts();
+        offlineService.products.save(data);
+        return data;
+      }
+      return offlineService.products.get();
+    },
     staleTime: 1000 * 60 * 60,
   });
 
@@ -21,25 +29,42 @@ export const useProductQuery = () => {
   }, [productsQuery.data, setProducts]);
 
   const createProductMutation = useMutation({
-    mutationFn: (p: ProductCreate) => productService.createProduct(p),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+    mutationFn: async (p: ProductCreate) => {
+      if (networkService.isOnline) {
+        return productService.createProduct(p);
+      }
+      return offlineService.products.create(p);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      await queryClient.refetchQueries({ queryKey: ["products"] });
     },
   });
 
   const updateProductMutation = useMutation({
-    mutationFn: ({ id, p }: { id: number; p: Partial<ProductCreate> }) =>
-      productService.updateProduct(id, p),
+    mutationFn: async ({ id, p }: { id: number; p: Partial<ProductCreate> }) => {
+      if (networkService.isOnline) {
+        return productService.updateProduct(id, p);
+      }
+      return offlineService.products.update(id, p);
+    },
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      await queryClient.refetchQueries({ queryKey: ["products"] });
     },
   });
 
   const deleteProductMutation = useMutation({
-    mutationFn: (id: number) => productService.deleteProduct(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
+    mutationFn: async (id: number) => {
+      if (networkService.isOnline) {
+        return productService.deleteProduct(id);
+      }
+      return offlineService.products.remove(id);
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      await queryClient.refetchQueries({ queryKey: ["products"] });
     },
   });
 

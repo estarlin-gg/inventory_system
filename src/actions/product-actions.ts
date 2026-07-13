@@ -19,8 +19,9 @@ export const useProductActions = () => {
   const handleCreateProduct = (data: ProductCreate) => {
     setLoading(true)
     createProductMutation.mutate(data, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["products"] });
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ["products"] });
+        await queryClient.refetchQueries({ queryKey: ["products"] });
         Swal.fire("Éxito", "Producto creado correctamente", "success");
         setLoading(false)
       },
@@ -38,8 +39,9 @@ export const useProductActions = () => {
     updateProductMutation.mutate(
       { id, p },
       {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["products"] });
+        onSuccess: async () => {
+          await queryClient.invalidateQueries({ queryKey: ["products"] });
+          await queryClient.refetchQueries({ queryKey: ["products"] });
           Swal.fire("Éxito", "Producto actualizado correctamente", "success");
           // setLoading(false)
         },
@@ -56,8 +58,9 @@ export const useProductActions = () => {
   const handleDeleteProduct = (id: number) => {
     setLoading(true)
     deleteProductMutation.mutate(id, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["products"] });
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ["products"] });
+        await queryClient.refetchQueries({ queryKey: ["products"] });
         Swal.fire("Éxito", "Producto eliminado correctamente", "success");
         setLoading(false)
       },

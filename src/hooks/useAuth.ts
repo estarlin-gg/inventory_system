@@ -6,6 +6,7 @@ import { login, logout, register } from "../services/authService";
 import { supabaseError } from "../lib/supabaseError";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { offlineService } from "../services/offline";
 
 export const useAuth = () => {
   const authResponse = useStore((s) => s.authResponse);
@@ -22,6 +23,7 @@ export const useAuth = () => {
       }
 
       setAuthResponse(user);
+      await offlineService.auth.save(user);
       navigate("/home");
     } catch (err) {
       const e = err as any;
@@ -58,6 +60,7 @@ export const useAuth = () => {
   const handleLogout = async () => {
     await logout();
     setAuthResponse(null);
+    await offlineService.auth.clear();
     navigate("/login");
   };
 

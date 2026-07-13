@@ -3,6 +3,7 @@ import {
   Button,
   HelperText,
   Label,
+  Select,
   Textarea,
   TextInput,
 } from "flowbite-react";
@@ -13,35 +14,40 @@ import { ProductCreate, productCreateSchema } from "../../models/product";
 import { useStore } from "../../store/store";
 
 import { useProductActions } from "../../actions/product-actions";
+import { useSupplierQuery } from "../../queries/useSupplierQuery";
 
 export const ProductForm = () => {
   const { handleCreateProduct, handleUpdateProduct } = useProductActions();
   const selectedProduct = useStore((s) => s.selectedProduct);
+  const { suppliersQuery } = useSupplierQuery();
   const navigate = useNavigate();
   const {
     handleSubmit,
     register,
     formState: { errors },
   } = useForm<ProductCreate>({
-    defaultValues: selectedProduct ?? { cost: 0 },
+    defaultValues: selectedProduct ?? { cost: 0, supplier_id: null },
     resolver: zodResolver(productCreateSchema),
   });
 
   const onSubmit = (data: ProductCreate) => {
     try {
+      const payload = {
+        ...data,
+        supplier_id: data.supplier_id ?? null,
+      };
       if (selectedProduct) {
-        handleUpdateProduct(selectedProduct.product_id, data);
+        handleUpdateProduct(selectedProduct.product_id, payload);
       } else {
-        handleCreateProduct(data);
+        handleCreateProduct(payload);
       }
-      // if (createProductMutation.isPending || updateProductMutation.isPending) {
-      //   return <Loading />;
-      // }
       navigate(-1);
     } catch (error) {
       console.error("Error al guardar el producto:", error);
     }
   };
+
+  const suppliers = suppliersQuery.data ?? [];
 
   return (
     <section className="w-full">
@@ -98,16 +104,19 @@ export const ProductForm = () => {
             {...register("discount", { valueAsNumber: true })}
           />
         </div>
-        {/* <div>
-          <Label className="text-lg">Categoría:</Label>
-          <Select {...register("categoryId", { valueAsNumber: true })}>
-            <option value="">Ninguna</option>
-            <option value="1">United States</option>
-            <option value="2">Canada</option>
-            <option value="3">France</option>
-            <option value="4">Germany</option>
+        <div>
+          <Label className="text-lg">Proveedor:</Label>
+          <Select
+            {...register("supplier_id", { valueAsNumber: true })}
+          >
+            <option value="">Sin proveedor</option>
+            {suppliers.map((s) => (
+              <option key={s.supplier_id} value={s.supplier_id}>
+                {s.name}
+              </option>
+            ))}
           </Select>
-        </div> */}
+        </div>
         <div>
           <Label className="text-lg">Stock:</Label>
           <TextInput

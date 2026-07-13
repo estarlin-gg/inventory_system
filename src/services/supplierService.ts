@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase";
 import { Supplier, SupplierCreate } from "../models/supplier";
+import { Product } from "../models/product";
 
 const getSuppliers = async (): Promise<Supplier[]> => {
   const { data, error } = await supabase
@@ -18,6 +19,15 @@ const getSupplier = async (id: number): Promise<Supplier> => {
     .single();
   if (error) throw error;
   return data as Supplier;
+};
+
+const getSupplierProducts = async (id: number): Promise<Product[]> => {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("supplier_id", id);
+  if (error) throw error;
+  return data as Product[];
 };
 
 const createSupplier = async (s: SupplierCreate): Promise<Supplier> => {
@@ -56,6 +66,7 @@ const deleteSupplier = async (id: number): Promise<void> => {
 export const supplierService = {
   getSuppliers,
   getSupplier,
+  getSupplierProducts,
   createSupplier,
   updateSupplier,
   deleteSupplier,

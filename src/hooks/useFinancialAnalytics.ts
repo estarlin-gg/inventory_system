@@ -18,6 +18,7 @@ export const useFinancialAnalytics = (
   }
 ) => {
   const sales = useStore((s) => s.sales);
+  const products = useStore((s) => s.products);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const today = new Date();
 
@@ -79,6 +80,9 @@ export const useFinancialAnalytics = (
   }, [mode, period, sales, options, today]);
 
   const productFinancials: ProductFinancial[] = useMemo(() => {
+    const productCostMap = new Map<number, number>();
+    products.forEach((p) => productCostMap.set(p.product_id, p.cost));
+
     const map: Record<
       number,
       {
@@ -95,10 +99,11 @@ export const useFinancialAnalytics = (
     filteredSales.forEach((sale) => {
       sale.sale_products.forEach((p) => {
         if (!map[p.product_id]) {
+          const currentCost = productCostMap.get(p.product_id) ?? 0;
           map[p.product_id] = {
             id: p.product_id,
             product_name: p.product_name,
-            cost: p.cost ?? 0,
+            cost: currentCost,
             price: p.price,
             units: 0,
             totalRevenue: 0,
@@ -106,10 +111,13 @@ export const useFinancialAnalytics = (
           };
         }
 
+        const saleCost = p.cost ?? 0;
+        const currentCost = productCostMap.get(p.product_id) ?? 0;
+        const effectiveCost = saleCost > 0 ? saleCost : currentCost;
         const entry = map[p.product_id];
         entry.units += p.quantity;
         entry.totalRevenue += p.quantity * p.price;
-        entry.totalCost += p.quantity * (p.cost ?? 0);
+        entry.totalCost += p.quantity * effectiveCost;
       });
     });
 
@@ -117,7 +125,7 @@ export const useFinancialAnalytics = (
       ...p,
       profit: p.totalRevenue - p.totalCost,
     }));
-  }, [filteredSales]);
+  }, [filteredSales, products]);
 
   const totalInvestment = productFinancials.reduce((s, p) => s + p.totalCost, 0);
   const totalRevenue = productFinancials.reduce((s, p) => s + p.totalRevenue, 0);

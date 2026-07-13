@@ -35,10 +35,13 @@ export const useSaleActions = () => {
     setLoading(true);
 
     createSaleMutation.mutate(sale, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["sales"] });
-        queryClient.invalidateQueries({ queryKey: ["products"] });
-        queryClient.invalidateQueries({ queryKey: ["history"] });
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ["sales"] });
+        await queryClient.invalidateQueries({ queryKey: ["products"] });
+        await queryClient.invalidateQueries({ queryKey: ["history"] });
+        await queryClient.refetchQueries({ queryKey: ["sales"] });
+        await queryClient.refetchQueries({ queryKey: ["products"] });
+        await queryClient.refetchQueries({ queryKey: ["history"] });
 
         Swal.fire("Éxito", "Venta realizada con exito", "success");
 

@@ -4,7 +4,6 @@ export const productCreateSchema = z.object({
   
   product_name: z.string().min(1, "El nombre es obligatorio"),
   description: z.string().optional(),
-  // category_id: z.number().int().positive().nullable().optional().default(null),
   price: z.number().nonnegative({ message: "El precio no puede ser negativo" }),
   cost: z
     .number()
@@ -14,6 +13,7 @@ export const productCreateSchema = z.object({
     .int()
     .nonnegative({ message: "El stock no puede ser negativo" }),
   discount: z.number().min(0).max(100).optional(),
+  supplier_id: z.number().int().positive().nullable().optional(),
 });
 
 export const productSchema = productCreateSchema.extend({

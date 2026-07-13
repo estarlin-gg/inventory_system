@@ -8,17 +8,24 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeInitializer } from "./hooks/ThemeInitializer";
 import { ToastContainer } from "react-toastify";
 import { useThemeMode } from "flowbite-react";
+import { useEffect } from "react";
+import { syncService } from "./services/offline";
 
 function App() {
   const loading = useStore((state) => state.isLoading);
   const { computedMode } = useThemeMode();
 
   useAuthListener();
+
+  useEffect(() => {
+    syncService.start();
+    return () => syncService.stop();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
       <ThemeInitializer />
-      {/* {loading ? <Loading /> : <Outlet />} */}
       {loading && <Loading />}
       <Outlet />
       <ToastContainer theme={computedMode}  />

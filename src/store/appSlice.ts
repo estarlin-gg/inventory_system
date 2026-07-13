@@ -6,7 +6,7 @@ export interface AppState {
 }
 
 export const useAppSlice :StateCreator<AppState> = ((set) => ({
-  isLoading: true,
+  isLoading: false,
   setLoading(l: boolean) {
     set({ isLoading: l });
   },

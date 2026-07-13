@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createHashRouter, Navigate } from "react-router-dom";
 import App from "../App";
 import { RegisterPage } from "../pages/RegisterPage";
 import { LoginPage } from "../pages/LoginPage";
@@ -10,13 +10,14 @@ import { SalesPage } from "../pages/SalesPage";
 import { HistoryPage } from "../pages/HistoryPage";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
 import { SuppliersPage } from "../pages/SuppliersPage";
+import { SupplierDetailPage } from "../pages/SupplierDetailPage";
 import { FinancialPage } from "../pages/FinancialPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { BlockAuthRoute } from "./BlockAuthRoute";
 import { ProductForm } from "../components/products/ProductForm";
 import { SupplierForm } from "../components/suppliers/SupplierForm";
 
-export const routes = createBrowserRouter([
+export const routes = createHashRouter([
   {
     path: "/",
     element: <App />,
@@ -56,7 +57,8 @@ export const routes = createBrowserRouter([
                 children: [
                   { index: true, element: <SuppliersPage /> },
                   { path: "create", element: <SupplierForm /> },
-                  { path: ":id", element: <SupplierForm /> },
+                  { path: ":id", element: <SupplierDetailPage /> },
+                  { path: ":id/edit", element: <SupplierForm /> },
                 ],
               },
 

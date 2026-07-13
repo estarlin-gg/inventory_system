@@ -3,12 +3,20 @@ import { saleService } from "../services/saleService";
 import { Sale } from "../models/sale";
 import { useEffect } from "react";
 import { useStore } from "../store/store";
+import { offlineService, networkService } from "../services/offline";
 
 export const useSaleQuery = () => {
   const setSales = useStore((s) => s.setSales);
   const saleQuery = useQuery({
     queryKey: ["sales"],
-    queryFn: saleService.getSales,
+    queryFn: async () => {
+      if (networkService.isOnline) {
+        const data = await saleService.getSales();
+        offlineService.sales.save(data);
+        return data;
+      }
+      return offlineService.sales.get();
+    },
     staleTime: 1000 * 60 * 30,
   });
 
@@ -17,7 +25,12 @@ export const useSaleQuery = () => {
   }, [saleQuery.data, setSales]);
 
   const createSaleMutation = useMutation({
-    mutationFn: (sale: Sale) => saleService.createSale(sale),
+    mutationFn: async (sale: Sale) => {
+      if (networkService.isOnline) {
+        return saleService.createSale(sale);
+      }
+      return offlineService.sales.create(sale);
+    },
   });
 
   return {

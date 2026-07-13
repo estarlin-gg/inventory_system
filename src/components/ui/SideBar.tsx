@@ -10,12 +10,13 @@ import {
   Avatar,
 } from "flowbite-react";
 import { HiChartPie, HiShoppingBag, HiMenu, HiX } from "react-icons/hi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarLink } from "./SidebarLink";
 import { BiLogOut, BiMoney } from "react-icons/bi";
 import { HiTruck } from "react-icons/hi";
 import { useAuth } from "../../hooks/useAuth";
 import { useStore } from "../../store/store";
+import { networkService, syncService } from "../../services/offline";
 
 export const SideBar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -67,6 +68,19 @@ const SidebarContent = () => {
   const { computedMode, toggleMode } = useThemeMode();
   const { logout } = useAuth();
   const userData = useStore((u) => u.authResponse);
+  const [isOnline, setIsOnline] = useState(networkService.isOnline);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const unsubNetwork = networkService.onStatusChange(setIsOnline);
+    const unsubSync = syncService.onSyncChange((_, pending) => {
+      setPendingCount(pending);
+    });
+    return () => {
+      unsubNetwork();
+      unsubSync();
+    };
+  }, []);
  
 
   return (
@@ -92,6 +106,25 @@ const SidebarContent = () => {
         >
           <span>{computedMode === "dark" ? "Oscuro" : "Claro"}</span>
         </SidebarItem>
+
+        <SidebarItem className="px-2">
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-block w-2 h-2 rounded-full ${
+                isOnline ? "bg-green-500" : "bg-red-500"
+              }`}
+            />
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {isOnline ? "En línea" : "Sin conexión"}
+            </span>
+          </div>
+          {!isOnline && pendingCount > 0 && (
+            <span className="text-xs text-yellow-600 dark:text-yellow-400 ml-4">
+              {pendingCount} {pendingCount === 1 ? "pendiente" : "pendientes"}
+            </span>
+          )}
+        </SidebarItem>
+
         <SidebarItem className="px-2 cursor-pointer">
           <div className="flex items-center gap-3 w-full  relative -left-4">
             <Avatar rounded size="sm" className="p-0 m-0" />
