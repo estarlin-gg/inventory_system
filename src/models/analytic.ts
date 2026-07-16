@@ -44,6 +44,7 @@ export interface ProductFinancial {
   product_name: string;
   cost: number;
   price: number;
+  discount: number;
   units: number;
   totalRevenue: number;
   totalCost: number;

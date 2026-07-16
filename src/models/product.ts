@@ -18,6 +18,7 @@ export const productCreateSchema = z.object({
 
 export const productSchema = productCreateSchema.extend({
   product_id: z.number().int().positive(),
+  user_id: z.string().uuid().optional(),
   final_price: z.number().nonnegative(),
 });
 

@@ -10,6 +10,7 @@ import { ToastContainer } from "react-toastify";
 import { useThemeMode } from "flowbite-react";
 import { useEffect } from "react";
 import { syncService } from "./services/offline";
+import { isElectron } from "./utils/platform";
 
 function App() {
   const loading = useStore((state) => state.isLoading);
@@ -18,8 +19,10 @@ function App() {
   useAuthListener();
 
   useEffect(() => {
-    syncService.start();
-    return () => syncService.stop();
+    if (isElectron) {
+      syncService.start();
+      return () => syncService.stop();
+    }
   }, []);
 
   return (

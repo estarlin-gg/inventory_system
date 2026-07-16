@@ -93,15 +93,10 @@ export const useSupplierAnalytics = (
   }, [mode, period, sales, options, today]);
 
   const supplierAnalytics: SupplierAnalytics[] = useMemo(() => {
-    const productCostMap = new Map<number, number>();
-    products.forEach((p) => productCostMap.set(p.product_id, p.cost));
-
-    const productSupplierMap = new Map<number, number>();
-    products.forEach((p) => {
-      if (p.supplier_id) {
-        productSupplierMap.set(p.product_id, p.supplier_id);
-      }
-    });
+    const productMap = new Map<number, { cost: number; supplier_id: number | null; discount: number }>();
+    products.forEach((p) =>
+      productMap.set(p.product_id, { cost: p.cost, supplier_id: p.supplier_id ?? null, discount: p.discount ?? 0 })
+    );
 
     const supplierNameMap = new Map<number, string>();
     suppliers.forEach((s) => supplierNameMap.set(s.supplier_id, s.name));
@@ -118,7 +113,8 @@ export const useSupplierAnalytics = (
 
     filteredSales.forEach((sale) => {
       sale.sale_products.forEach((sp) => {
-        const supplierId = productSupplierMap.get(sp.product_id);
+        const prod = productMap.get(sp.product_id);
+        const supplierId = prod?.supplier_id;
         if (supplierId) {
           if (!map[supplierId]) {
             map[supplierId] = {
@@ -130,10 +126,14 @@ export const useSupplierAnalytics = (
           }
           const entry = map[supplierId];
           const saleCost = sp.cost ?? 0;
-          const currentCost = productCostMap.get(sp.product_id) ?? 0;
+          const currentCost = prod?.cost ?? 0;
           const effectiveCost = saleCost > 0 ? saleCost : currentCost;
+          const discountPct = prod?.discount ?? 0;
+          const effectivePrice = discountPct > 0
+            ? sp.price - sp.price * (discountPct / 100)
+            : sp.price;
           entry.totalInvestment += effectiveCost * sp.quantity;
-          entry.totalRevenue += sp.price * sp.quantity;
+          entry.totalRevenue += effectivePrice * sp.quantity;
           entry.productsSet.add(sp.product_id);
           entry.totalUnits += sp.quantity;
         }

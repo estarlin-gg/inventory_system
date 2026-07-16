@@ -16,10 +16,13 @@ import { BiLogOut, BiMoney } from "react-icons/bi";
 import { HiTruck } from "react-icons/hi";
 import { useAuth } from "../../hooks/useAuth";
 import { useStore } from "../../store/store";
-import { networkService, syncService } from "../../services/offline";
+import { syncService } from "../../services/offline";
+import { isElectron } from "../../utils/platform";
 
 export const SideBar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const closeMobile = () => setIsMobileOpen(false);
 
   return (
     <>
@@ -49,13 +52,13 @@ export const SideBar = () => {
           {/* Overlay */}
           <div
             className="fixed inset-0 bg-black/40"
-            onClick={() => setIsMobileOpen(false)}
+            onClick={closeMobile}
           />
 
           {/* Sidebar */}
           <div className="relative w-64 bg-slate-200 dark:bg-slate-900 shadow-lg z-50">
             <Sidebar aria-label="Sidebar " className="h-full">
-              <SidebarContent />
+              <SidebarContent onLinkClick={closeMobile} />
             </Sidebar>
           </div>
         </div>
@@ -64,38 +67,41 @@ export const SideBar = () => {
   );
 };
 
-const SidebarContent = () => {
+const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
   const { computedMode, toggleMode } = useThemeMode();
   const { logout } = useAuth();
   const userData = useStore((u) => u.authResponse);
-  const [isOnline, setIsOnline] = useState(networkService.isOnline);
+  const [isOnline, setIsOnline] = useState(isElectron ? navigator.onLine : true);
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
-    const unsubNetwork = networkService.onStatusChange(setIsOnline);
+    if (!isElectron) return;
     const unsubSync = syncService.onSyncChange((_, pending) => {
       setPendingCount(pending);
     });
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
     return () => {
-      unsubNetwork();
       unsubSync();
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
- 
 
   return (
     <SidebarItems className="h-full flex flex-col justify-between">
       <SidebarItemGroup>
         <SidebarCollapse icon={HiChartPie} label="Home">
-          <SidebarLink title="Dashboard" url="/home" />
-          <SidebarLink title="Historial" url="/history" />
-          <SidebarLink title="Análisis" url="/analytics" />
-          <SidebarLink title="Finanzas" url="/financial" />
+          <SidebarLink title="Dashboard" url="/home" onClick={onLinkClick} />
+          <SidebarLink title="Historial" url="/history" onClick={onLinkClick} />
+          <SidebarLink title="Análisis" url="/analytics" onClick={onLinkClick} />
         </SidebarCollapse>
 
-        <SidebarLink title="Ventas" url="/sales" icon={BiMoney} />
-        <SidebarLink title="Inventario" url="/inventory" icon={HiShoppingBag} />
-        <SidebarLink title="Proveedores" url="/suppliers" icon={HiTruck} />
+        <SidebarLink title="Ventas" url="/sales" icon={BiMoney} onClick={onLinkClick} />
+        <SidebarLink title="Inventario" url="/inventory" icon={HiShoppingBag} onClick={onLinkClick} />
+        <SidebarLink title="Proveedores" url="/suppliers" icon={HiTruck} onClick={onLinkClick} />
       </SidebarItemGroup>
 
       <SidebarItemGroup>
@@ -107,23 +113,25 @@ const SidebarContent = () => {
           <span>{computedMode === "dark" ? "Oscuro" : "Claro"}</span>
         </SidebarItem>
 
-        <SidebarItem className="px-2">
-          <div className="flex items-center gap-2">
-            <span
-              className={`inline-block w-2 h-2 rounded-full ${
-                isOnline ? "bg-green-500" : "bg-red-500"
-              }`}
-            />
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              {isOnline ? "En línea" : "Sin conexión"}
-            </span>
-          </div>
-          {!isOnline && pendingCount > 0 && (
-            <span className="text-xs text-yellow-600 dark:text-yellow-400 ml-4">
-              {pendingCount} {pendingCount === 1 ? "pendiente" : "pendientes"}
-            </span>
-          )}
-        </SidebarItem>
+        {isElectron && (
+          <SidebarItem className="px-2">
+            <div className="flex items-center gap-2">
+              <span
+                className={`inline-block w-2 h-2 rounded-full ${
+                  isOnline ? "bg-green-500" : "bg-red-500"
+                }`}
+              />
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                {isOnline ? "En línea" : "Sin conexión"}
+              </span>
+            </div>
+            {!isOnline && pendingCount > 0 && (
+              <span className="text-xs text-yellow-600 dark:text-yellow-400 ml-4">
+                {pendingCount} {pendingCount === 1 ? "pendiente" : "pendientes"}
+              </span>
+            )}
+          </SidebarItem>
+        )}
 
         <SidebarItem className="px-2 cursor-pointer">
           <div className="flex items-center gap-3 w-full  relative -left-4">

@@ -3,7 +3,7 @@ import { useStore } from "../store/store";
 import { supabase } from "../lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { offlineService } from "../services/offline";
-import { networkService } from "../services/offline";
+import { isElectron } from "../utils/platform";
 
 export const useAuthListener = () => {
   const setAuthResponse = useStore((state) => state.setAuthResponse);
@@ -20,8 +20,8 @@ export const useAuthListener = () => {
       if (event === "INITIAL_SESSION") {
         if (session?.user) {
           setAuthResponse(session.user);
-          offlineService.auth.save(session.user);
-        } else if (!networkService.isOnline) {
+          if (isElectron) offlineService.auth.save(session.user);
+        } else if (isElectron) {
           const cached = await offlineService.auth.get();
           if (cached && !cancelled) {
             setAuthResponse(cached as Parameters<typeof setAuthResponse>[0]);
@@ -33,10 +33,10 @@ export const useAuthListener = () => {
         }
       } else if (event === "SIGNED_IN" && session?.user) {
         setAuthResponse(session.user);
-        offlineService.auth.save(session.user);
+        if (isElectron) offlineService.auth.save(session.user);
       } else if (event === "SIGNED_OUT") {
         setAuthResponse(null);
-        offlineService.auth.clear();
+        if (isElectron) offlineService.auth.clear();
         navigate("/login");
       }
     });

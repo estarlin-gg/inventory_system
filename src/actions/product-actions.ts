@@ -3,7 +3,6 @@ import Swal from "sweetalert2";
 
 import { ProductCreate } from "../models/product";
 import { queryClient } from "../queries/queryClient";
-import { useStore } from "../store/store";
 
 export const useProductActions = () => {
   const {
@@ -13,29 +12,24 @@ export const useProductActions = () => {
     deleteProductMutation,
   } = useProductQuery();
 
-    const setLoading = useStore((s) => s.setLoading);
-
   // CREATE
-  const handleCreateProduct = (data: ProductCreate) => {
-    setLoading(true)
+  const handleCreateProduct = (data: ProductCreate, onSuccess?: () => void) => {
     createProductMutation.mutate(data, {
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ["products"] });
         await queryClient.refetchQueries({ queryKey: ["products"] });
         Swal.fire("Éxito", "Producto creado correctamente", "success");
-        setLoading(false)
+        onSuccess?.();
       },
       onError: (err) => {
         Swal.fire("Error", "No se pudo crear el producto", "error");
         console.error(err);
-        setLoading(false)
       },
     });
   };
 
   // UPDATE
-  const handleUpdateProduct = (id: number, p: ProductCreate) => {
-    // setLoading(true)
+  const handleUpdateProduct = (id: number, p: ProductCreate, onSuccess?: () => void) => {
     updateProductMutation.mutate(
       { id, p },
       {
@@ -43,12 +37,11 @@ export const useProductActions = () => {
           await queryClient.invalidateQueries({ queryKey: ["products"] });
           await queryClient.refetchQueries({ queryKey: ["products"] });
           Swal.fire("Éxito", "Producto actualizado correctamente", "success");
-          // setLoading(false)
+          onSuccess?.();
         },
         onError: (err) => {
           Swal.fire("Error", "No se pudo actualizar el producto", "error");
           console.error("ERROR AL ACTUALIZAR", err);
-          // setLoading(false)
         },
       }
     );
@@ -56,18 +49,15 @@ export const useProductActions = () => {
 
   // DELETE
   const handleDeleteProduct = (id: number) => {
-    setLoading(true)
     deleteProductMutation.mutate(id, {
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ["products"] });
         await queryClient.refetchQueries({ queryKey: ["products"] });
         Swal.fire("Éxito", "Producto eliminado correctamente", "success");
-        setLoading(false)
       },
       onError: (err) => {
         Swal.fire("Error", "No se pudo eliminar el producto", "error");
         console.error(err);
-        setLoading(false)
       },
     });
   };

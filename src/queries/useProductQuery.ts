@@ -3,7 +3,8 @@ import { productService } from "../services/productService";
 import { useStore } from "../store/store";
 import { useEffect } from "react";
 import { ProductCreate } from "../models/product";
-import { offlineService, networkService } from "../services/offline";
+import { offlineService } from "../services/offline";
+import { isElectron } from "../utils/platform";
 
 export const useProductQuery = () => {
   const setProducts = useStore((s) => s.setProducts);
@@ -12,14 +13,18 @@ export const useProductQuery = () => {
   const productsQuery = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      if (networkService.isOnline) {
-        const data = await productService.getProducts();
-        offlineService.products.save(data);
-        return data;
+      if (isElectron) {
+        try {
+          const data = await productService.getProducts();
+          offlineService.products.save(data).catch(() => {});
+          return data;
+        } catch {
+          return offlineService.products.get();
+        }
       }
-      return offlineService.products.get();
+      return productService.getProducts();
     },
-    staleTime: 1000 * 60 * 60,
+    staleTime: isElectron ? 1000 * 60 * 60 : 0,
   });
 
   useEffect(() => {
@@ -30,10 +35,16 @@ export const useProductQuery = () => {
 
   const createProductMutation = useMutation({
     mutationFn: async (p: ProductCreate) => {
-      if (networkService.isOnline) {
-        return productService.createProduct(p);
+      if (isElectron) {
+        const local = await offlineService.products.create(p);
+        try {
+          await productService.createProduct(p);
+        } catch {
+          // syncService will retry later
+        }
+        return local;
       }
-      return offlineService.products.create(p);
+      return productService.createProduct(p);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -43,12 +54,17 @@ export const useProductQuery = () => {
 
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, p }: { id: number; p: Partial<ProductCreate> }) => {
-      if (networkService.isOnline) {
-        return productService.updateProduct(id, p);
+      if (isElectron) {
+        const local = await offlineService.products.update(id, p);
+        try {
+          await productService.updateProduct(id, p);
+        } catch {
+          // syncService will retry later
+        }
+        return local;
       }
-      return offlineService.products.update(id, p);
+      return productService.updateProduct(id, p);
     },
-
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["products"] });
       await queryClient.refetchQueries({ queryKey: ["products"] });
@@ -57,10 +73,16 @@ export const useProductQuery = () => {
 
   const deleteProductMutation = useMutation({
     mutationFn: async (id: number) => {
-      if (networkService.isOnline) {
-        return productService.deleteProduct(id);
+      if (isElectron) {
+        await offlineService.products.remove(id);
+        try {
+          await productService.deleteProduct(id);
+        } catch {
+          // syncService will retry later
+        }
+        return;
       }
-      return offlineService.products.remove(id);
+      return productService.deleteProduct(id);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["products"] });

@@ -31,19 +31,14 @@ export const ProductForm = () => {
   });
 
   const onSubmit = (data: ProductCreate) => {
-    try {
-      const payload = {
-        ...data,
-        supplier_id: data.supplier_id ?? null,
-      };
-      if (selectedProduct) {
-        handleUpdateProduct(selectedProduct.product_id, payload);
-      } else {
-        handleCreateProduct(payload);
-      }
-      navigate(-1);
-    } catch (error) {
-      console.error("Error al guardar el producto:", error);
+    const payload = {
+      ...data,
+      supplier_id: data.supplier_id ?? null,
+    };
+    if (selectedProduct) {
+      handleUpdateProduct(selectedProduct.product_id, payload, () => navigate(-1));
+    } else {
+      handleCreateProduct(payload, () => navigate(-1));
     }
   };
 

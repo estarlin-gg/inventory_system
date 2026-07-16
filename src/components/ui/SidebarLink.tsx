@@ -5,15 +5,19 @@ interface SideBarLinkProps {
   url: string;
   title: string;
   icon?: ElementType;
+  onClick?: () => void;
 }
 
-export const SidebarLink = ({ title, url, icon: Icon }: SideBarLinkProps) => {
+export const SidebarLink = ({ title, url, icon: Icon, onClick }: SideBarLinkProps) => {
   const location = useLocation();
-  const isActive = location.pathname === url;
+  const isActive =
+    location.pathname === url ||
+    location.pathname.startsWith(url + "/");
 
   return (
     <Link
       to={url}
+      onClick={onClick}
       className={`flex items-center rounded-lg py-2 px-2 text-base font-normal group w-full transition duration-75
         ${
           isActive

@@ -7,6 +7,8 @@ import { supabaseError } from "../lib/supabaseError";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { offlineService } from "../services/offline";
+import { supabase } from "../lib/supabase";
+import { isElectron } from "../utils/platform";
 
 export const useAuth = () => {
   const authResponse = useStore((s) => s.authResponse);
@@ -23,7 +25,7 @@ export const useAuth = () => {
       }
 
       setAuthResponse(user);
-      await offlineService.auth.save(user);
+      if (isElectron) await offlineService.auth.save(user);
       navigate("/home");
     } catch (err) {
       const e = err as any;
@@ -41,11 +43,13 @@ export const useAuth = () => {
 
       if (error) throw error;
 
-      Swal.fire(
+      await Swal.fire(
         "Verifica tu correo",
         "Te hemos enviado un enlace para confirmar tu cuenta. Revisa tu bandeja de entrada.",
         "success"
       );
+
+      await supabase.auth.signOut();
       return true;
     } catch (err) {
       const e = err as any;
@@ -60,7 +64,7 @@ export const useAuth = () => {
   const handleLogout = async () => {
     await logout();
     setAuthResponse(null);
-    await offlineService.auth.clear();
+    if (isElectron) await offlineService.auth.clear();
     navigate("/login");
   };
 

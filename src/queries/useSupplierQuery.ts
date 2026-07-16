@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supplierService } from "../services/supplierService";
 import { SupplierCreate } from "../models/supplier";
-import { offlineService, networkService } from "../services/offline";
+import { offlineService } from "../services/offline";
+import { isElectron } from "../utils/platform";
 
 export const useSupplierQuery = () => {
   const queryClient = useQueryClient();
@@ -9,22 +10,32 @@ export const useSupplierQuery = () => {
   const suppliersQuery = useQuery({
     queryKey: ["suppliers"],
     queryFn: async () => {
-      if (networkService.isOnline) {
-        const data = await supplierService.getSuppliers();
-        offlineService.suppliers.save(data);
-        return data;
+      if (isElectron) {
+        try {
+          const data = await supplierService.getSuppliers();
+          offlineService.suppliers.save(data).catch(() => {});
+          return data;
+        } catch {
+          return offlineService.suppliers.get();
+        }
       }
-      return offlineService.suppliers.get();
+      return supplierService.getSuppliers();
     },
-    staleTime: 1000 * 60 * 60,
+    staleTime: isElectron ? 1000 * 60 * 60 : 0,
   });
 
   const createSupplierMutation = useMutation({
     mutationFn: async (s: SupplierCreate) => {
-      if (networkService.isOnline) {
-        return supplierService.createSupplier(s);
+      if (isElectron) {
+        const local = await offlineService.suppliers.create(s);
+        try {
+          await supplierService.createSupplier(s);
+        } catch {
+          // syncService will retry later
+        }
+        return local;
       }
-      return offlineService.suppliers.create(s);
+      return supplierService.createSupplier(s);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["suppliers"] });
@@ -34,10 +45,16 @@ export const useSupplierQuery = () => {
 
   const updateSupplierMutation = useMutation({
     mutationFn: async ({ id, s }: { id: number; s: Partial<SupplierCreate> }) => {
-      if (networkService.isOnline) {
-        return supplierService.updateSupplier(id, s);
+      if (isElectron) {
+        const local = await offlineService.suppliers.update(id, s);
+        try {
+          await supplierService.updateSupplier(id, s);
+        } catch {
+          // syncService will retry later
+        }
+        return local;
       }
-      return offlineService.suppliers.update(id, s);
+      return supplierService.updateSupplier(id, s);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["suppliers"] });
@@ -47,10 +64,16 @@ export const useSupplierQuery = () => {
 
   const deleteSupplierMutation = useMutation({
     mutationFn: async (id: number) => {
-      if (networkService.isOnline) {
-        return supplierService.deleteSupplier(id);
+      if (isElectron) {
+        await offlineService.suppliers.remove(id);
+        try {
+          await supplierService.deleteSupplier(id);
+        } catch {
+          // syncService will retry later
+        }
+        return;
       }
-      return offlineService.suppliers.remove(id);
+      return supplierService.deleteSupplier(id);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["suppliers"] });

@@ -3,6 +3,7 @@ import { networkService } from "./networkService";
 import { saleService } from "../saleService";
 import { productService } from "../productService";
 import { supplierService } from "../supplierService";
+import { queryClient } from "../../queries/queryClient";
 
 type SyncListener = (syncing: boolean, pending: number) => void;
 
@@ -22,12 +23,10 @@ class SyncService {
   start() {
     this.unsubscribeNetwork = networkService.onStatusChange((online) => {
       if (online) {
-        this.syncAll();
+        setTimeout(() => this.syncAll(), 500);
       }
     });
-
     this.updatePendingCount();
-
     if (networkService.isOnline) {
       this.syncAll();
     }
@@ -79,6 +78,11 @@ class SyncService {
       await offlineService.sync.clearSynced();
       this._pendingCount = 0;
       this.notify();
+
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      await queryClient.invalidateQueries({ queryKey: ["sales"] });
+      await queryClient.invalidateQueries({ queryKey: ["history"] });
+      await queryClient.invalidateQueries({ queryKey: ["suppliers"] });
     } catch (err) {
       console.error("Sync error:", err);
     } finally {

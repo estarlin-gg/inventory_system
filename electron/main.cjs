@@ -11,8 +11,7 @@ function createWindow() {
     height: 900,
     minWidth: 1024,
     minHeight: 700,
-    title: "MimaApp",
-    icon: path.join(__dirname, "..", "public", "favicon.ico"),
+    title: "Mima inventory",
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,

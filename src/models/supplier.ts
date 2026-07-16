@@ -9,6 +9,7 @@ export const supplierCreateSchema = z.object({
 
 export const supplierSchema = supplierCreateSchema.extend({
   supplier_id: z.number().int().positive(),
+  user_id: z.string().uuid().optional(),
   created_at: z.coerce.date(),
 });
 

@@ -62,12 +62,12 @@ export const AnalyticsSelect = ({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-2 items-center ">
+    <div className="flex flex-col lg:flex-row gap-2 items-center w-full">
       {/* Selector de modo */}
       <Select
         value={mode}
         onChange={(e) => onModeChange(e.target.value as Mode)}
-        className="sm:w-full lg:w-sm"
+        className="w-full lg:w-sm"
       >
         <option value="period">Por período</option>
         <option value="monthly">Por meses</option>
@@ -80,7 +80,7 @@ export const AnalyticsSelect = ({
         <Select
           value={period}
           onChange={(e) => onPeriodChange(e.target.value as Period)}
-          className="sm:w-full lg:w-sm"
+          className="w-full lg:w-sm"
         >
           <option value="day">Ventas del día</option>
           <option value="week">Ventas de la semana</option>
@@ -95,7 +95,7 @@ export const AnalyticsSelect = ({
           <Select
             value={month ?? new Date().getMonth()}
             onChange={(e) => onMonthChange?.(parseInt(e.target.value))}
-            className="sm:w-full lg:w-full"
+            className="w-full lg:w-full"
           >
             {months.map((m, i) => (
               <option key={i} value={i}>
@@ -107,7 +107,7 @@ export const AnalyticsSelect = ({
           <Select
             value={year ?? new Date().getFullYear()}
             onChange={(e) => onYearChange?.(parseInt(e.target.value))}
-            className="sm:w-full lg:w-xs"
+            className="w-full lg:w-xs"
           >
             {years.map((y) => (
               <option key={y} value={y}>
@@ -123,7 +123,7 @@ export const AnalyticsSelect = ({
         <Select
           value={year ?? new Date().getFullYear()}
           onChange={(e) => onYearChange?.(parseInt(e.target.value))}
-          className="sm:w-full lg:w-46"
+          className="w-full lg:w-46"
         >
           {years.map((y) => (
             <option key={y} value={y}>

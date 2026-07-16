@@ -80,8 +80,10 @@ export const useFinancialAnalytics = (
   }, [mode, period, sales, options, today]);
 
   const productFinancials: ProductFinancial[] = useMemo(() => {
-    const productCostMap = new Map<number, number>();
-    products.forEach((p) => productCostMap.set(p.product_id, p.cost));
+    const productMap = new Map<number, { cost: number; discount: number }>();
+    products.forEach((p) =>
+      productMap.set(p.product_id, { cost: p.cost, discount: p.discount ?? 0 })
+    );
 
     const map: Record<
       number,
@@ -90,6 +92,7 @@ export const useFinancialAnalytics = (
         product_name: string;
         cost: number;
         price: number;
+        discount: number;
         units: number;
         totalRevenue: number;
         totalCost: number;
@@ -99,24 +102,33 @@ export const useFinancialAnalytics = (
     filteredSales.forEach((sale) => {
       sale.sale_products.forEach((p) => {
         if (!map[p.product_id]) {
-          const currentCost = productCostMap.get(p.product_id) ?? 0;
+          const prod = productMap.get(p.product_id);
+          const currentCost = prod?.cost ?? 0;
+          const discount = prod?.discount ?? 0;
           map[p.product_id] = {
             id: p.product_id,
             product_name: p.product_name,
             cost: currentCost,
             price: p.price,
+            discount,
             units: 0,
             totalRevenue: 0,
             totalCost: 0,
           };
         }
 
-        const saleCost = p.cost ?? 0;
-        const currentCost = productCostMap.get(p.product_id) ?? 0;
-        const effectiveCost = saleCost > 0 ? saleCost : currentCost;
         const entry = map[p.product_id];
+        const saleCost = p.cost ?? 0;
+        const currentCost = productMap.get(p.product_id)?.cost ?? 0;
+        const effectiveCost = saleCost > 0 ? saleCost : currentCost;
+
+        const discountPct = entry.discount;
+        const effectivePrice = discountPct > 0
+          ? p.price - p.price * (discountPct / 100)
+          : p.price;
+
         entry.units += p.quantity;
-        entry.totalRevenue += p.quantity * p.price;
+        entry.totalRevenue += p.quantity * effectivePrice;
         entry.totalCost += p.quantity * effectiveCost;
       });
     });

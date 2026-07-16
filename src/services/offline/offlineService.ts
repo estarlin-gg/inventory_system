@@ -2,10 +2,19 @@ import { getDB, SyncQueueEntry } from "./db";
 import { Product, ProductCreate } from "../../models/product";
 import { Sale } from "../../models/sale";
 import { Supplier, SupplierCreate } from "../../models/supplier";
-import { networkService } from "./networkService";
 
 const generateId = (): string => {
   return crypto.randomUUID();
+};
+
+const enqueue = async (entry: Omit<SyncQueueEntry, "id" | "timestamp" | "synced">) => {
+  const db = await getDB();
+  await db.put("syncQueue", {
+    ...entry,
+    id: generateId(),
+    timestamp: Date.now(),
+    synced: false,
+  });
 };
 
 // ─── PRODUCTS ────────────────────────────────────────────
@@ -38,28 +47,11 @@ const createProduct = async (p: ProductCreate): Promise<Product> => {
   };
 
   await db.put("products", newProduct);
-
-  if (networkService.isOnline) {
-    return newProduct;
-  }
-
-  await addToQueue({
-    id: generateId(),
-    table: "products",
-    operation: "create",
-    recordId: newProduct.product_id,
-    data: p,
-    timestamp: Date.now(),
-    synced: false,
-  });
-
+  await enqueue({ table: "products", operation: "create", recordId: newProduct.product_id, data: p });
   return newProduct;
 };
 
-const updateProduct = async (
-  id: number,
-  p: Partial<ProductCreate>
-): Promise<Product> => {
+const updateProduct = async (id: number, p: Partial<ProductCreate>): Promise<Product> => {
   const db = await getDB();
   const existing = await db.get("products", id);
   if (!existing) throw new Error("Producto no encontrado");
@@ -76,39 +68,14 @@ const updateProduct = async (
   };
 
   await db.put("products", updated);
-
-  if (networkService.isOnline) {
-    return updated;
-  }
-
-  await addToQueue({
-    id: generateId(),
-    table: "products",
-    operation: "update",
-    recordId: id,
-    data: p,
-    timestamp: Date.now(),
-    synced: false,
-  });
-
+  await enqueue({ table: "products", operation: "update", recordId: id, data: p });
   return updated;
 };
 
 const deleteProduct = async (id: number): Promise<void> => {
   const db = await getDB();
   await db.delete("products", id);
-
-  if (!networkService.isOnline) {
-    await addToQueue({
-      id: generateId(),
-      table: "products",
-      operation: "delete",
-      recordId: id,
-      data: null,
-      timestamp: Date.now(),
-      synced: false,
-    });
-  }
+  await enqueue({ table: "products", operation: "delete", recordId: id, data: null });
 };
 
 // ─── SALES ───────────────────────────────────────────────
@@ -118,12 +85,19 @@ const getSales = async (): Promise<Sale[]> => {
   return db.getAll("sales");
 };
 
+const normalizeSaleId = (s: Sale): Sale => {
+  if (s.id == null) {
+    return { ...s, id: (s as unknown as Record<string, unknown>).sale_id as number };
+  }
+  return s;
+};
+
 const saveSales = async (sales: Sale[]): Promise<void> => {
   const db = await getDB();
   const tx = db.transaction("sales", "readwrite");
   await tx.store.clear();
   for (const s of sales) {
-    await tx.store.put(s);
+    await tx.store.put(normalizeSaleId(s));
   }
   await tx.done;
 };
@@ -135,21 +109,7 @@ const createSale = async (sale: Sale): Promise<Sale> => {
   const newSale: Sale = { ...sale, id: maxId + 1 };
 
   await db.put("sales", newSale);
-
-  if (networkService.isOnline) {
-    return newSale;
-  }
-
-  await addToQueue({
-    id: generateId(),
-    table: "sales",
-    operation: "create",
-    recordId: newSale.id ?? null,
-    data: sale,
-    timestamp: Date.now(),
-    synced: false,
-  });
-
+  await enqueue({ table: "sales", operation: "create", recordId: newSale.id ?? null, data: sale });
   return newSale;
 };
 
@@ -173,87 +133,33 @@ const saveSuppliers = async (suppliers: Supplier[]): Promise<void> => {
 const createSupplier = async (s: SupplierCreate): Promise<Supplier> => {
   const db = await getDB();
   const all = await db.getAll("suppliers");
-  const maxId = all.reduce(
-    (max, sup) => Math.max(max, sup.supplier_id),
-    0
-  );
+  const maxId = all.reduce((max, sup) => Math.max(max, sup.supplier_id), 0);
   const now = new Date();
-  const newSupplier: Supplier = {
-    ...s,
-    supplier_id: maxId + 1,
-    created_at: now,
-  };
+  const newSupplier: Supplier = { ...s, supplier_id: maxId + 1, created_at: now };
 
   await db.put("suppliers", newSupplier);
-
-  if (networkService.isOnline) {
-    return newSupplier;
-  }
-
-  await addToQueue({
-    id: generateId(),
-    table: "suppliers",
-    operation: "create",
-    recordId: newSupplier.supplier_id,
-    data: s,
-    timestamp: Date.now(),
-    synced: false,
-  });
-
+  await enqueue({ table: "suppliers", operation: "create", recordId: newSupplier.supplier_id, data: s });
   return newSupplier;
 };
 
-const updateSupplier = async (
-  id: number,
-  s: Partial<SupplierCreate>
-): Promise<Supplier> => {
+const updateSupplier = async (id: number, s: Partial<SupplierCreate>): Promise<Supplier> => {
   const db = await getDB();
   const existing = await db.get("suppliers", id);
   if (!existing) throw new Error("Proveedor no encontrado");
 
   const updated: Supplier = { ...existing, ...s };
   await db.put("suppliers", updated);
-
-  if (networkService.isOnline) {
-    return updated;
-  }
-
-  await addToQueue({
-    id: generateId(),
-    table: "suppliers",
-    operation: "update",
-    recordId: id,
-    data: s,
-    timestamp: Date.now(),
-    synced: false,
-  });
-
+  await enqueue({ table: "suppliers", operation: "update", recordId: id, data: s });
   return updated;
 };
 
 const deleteSupplier = async (id: number): Promise<void> => {
   const db = await getDB();
   await db.delete("suppliers", id);
-
-  if (!networkService.isOnline) {
-    await addToQueue({
-      id: generateId(),
-      table: "suppliers",
-      operation: "delete",
-      recordId: id,
-      data: null,
-      timestamp: Date.now(),
-      synced: false,
-    });
-  }
+  await enqueue({ table: "suppliers", operation: "delete", recordId: id, data: null });
 };
 
 // ─── SYNC QUEUE ──────────────────────────────────────────
-
-const addToQueue = async (entry: SyncQueueEntry): Promise<void> => {
-  const db = await getDB();
-  await db.put("syncQueue", entry);
-};
 
 const getPendingEntries = async (): Promise<SyncQueueEntry[]> => {
   const db = await getDB();
@@ -300,34 +206,9 @@ const clearAuth = async (): Promise<void> => {
 };
 
 export const offlineService = {
-  products: {
-    get: getProducts,
-    save: saveProducts,
-    create: createProduct,
-    update: updateProduct,
-    remove: deleteProduct,
-  },
-  sales: {
-    get: getSales,
-    save: saveSales,
-    create: createSale,
-  },
-  suppliers: {
-    get: getSuppliers,
-    save: saveSuppliers,
-    create: createSupplier,
-    update: updateSupplier,
-    remove: deleteSupplier,
-  },
-  sync: {
-    add: addToQueue,
-    getPending: getPendingEntries,
-    markSynced,
-    clearSynced: clearSyncedEntries,
-  },
-  auth: {
-    save: saveAuth,
-    get: getAuth,
-    clear: clearAuth,
-  },
+  products: { get: getProducts, save: saveProducts, create: createProduct, update: updateProduct, remove: deleteProduct },
+  sales: { get: getSales, save: saveSales, create: createSale },
+  suppliers: { get: getSuppliers, save: saveSuppliers, create: createSupplier, update: updateSupplier, remove: deleteSupplier },
+  sync: { getPending: getPendingEntries, markSynced, clearSynced: clearSyncedEntries },
+  auth: { save: saveAuth, get: getAuth, clear: clearAuth },
 };

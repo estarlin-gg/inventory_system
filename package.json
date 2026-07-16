@@ -2,7 +2,7 @@
   "name": "mima_client",
   "private": true,
   "version": "1.0.0",
-  "description": "MimaApp - Sistema de Inventario",
+  "description": "Mima inventory - Sistema de Inventario",
   "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
@@ -71,22 +71,17 @@
       "electron/**/*"
     ],
     "win": {
-      "target": "nsis",
-      "icon": "public/favicon.ico"
+      "target": "nsis"
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "installerIcon": "public/favicon.ico",
-      "uninstallerIcon": "public/favicon.ico"
+      "allowToChangeInstallationDirectory": true
     },
     "mac": {
-      "target": "dmg",
-      "icon": "public/favicon.ico"
+      "target": "dmg"
     },
     "linux": {
-      "target": "AppImage",
-      "icon": "public/favicon.ico"
+      "target": "AppImage"
     }
   },
   "pnpm": {

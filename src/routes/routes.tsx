@@ -1,23 +1,26 @@
-import { createHashRouter, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createHashRouter,
+  Navigate,
+} from "react-router-dom";
 import App from "../App";
 import { RegisterPage } from "../pages/RegisterPage";
 import { LoginPage } from "../pages/LoginPage";
 import { MainLayout } from "../layouts/MainLayout";
 import { HomePage } from "../pages/HomePage";
 import { InventoryPage } from "../pages/InventoryPage";
-
 import { SalesPage } from "../pages/SalesPage";
 import { HistoryPage } from "../pages/HistoryPage";
 import { AnalyticsPage } from "../pages/AnalyticsPage";
 import { SuppliersPage } from "../pages/SuppliersPage";
 import { SupplierDetailPage } from "../pages/SupplierDetailPage";
-import { FinancialPage } from "../pages/FinancialPage";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { BlockAuthRoute } from "./BlockAuthRoute";
 import { ProductForm } from "../components/products/ProductForm";
 import { SupplierForm } from "../components/suppliers/SupplierForm";
+import { isElectron } from "../utils/platform";
 
-export const routes = createHashRouter([
+const routeElements = [
   {
     path: "/",
     element: <App />,
@@ -30,7 +33,6 @@ export const routes = createHashRouter([
           { path: "*", element: <Navigate to="/login" replace /> },
         ],
       },
-
       {
         element: <ProtectedRoute />,
         children: [
@@ -38,7 +40,6 @@ export const routes = createHashRouter([
             element: <MainLayout />,
             children: [
               { index: true, element: <Navigate to="/home" replace /> },
-
               { path: "home", element: <HomePage /> },
               {
                 path: "inventory",
@@ -50,7 +51,6 @@ export const routes = createHashRouter([
               },
               { path: "history", element: <HistoryPage /> },
               { path: "analytics", element: <AnalyticsPage /> },
-              { path: "financial", element: <FinancialPage /> },
               { path: "sales", element: <SalesPage /> },
               {
                 path: "suppliers",
@@ -61,15 +61,17 @@ export const routes = createHashRouter([
                   { path: ":id/edit", element: <SupplierForm /> },
                 ],
               },
-
               { path: "*", element: <Navigate to="/home" replace /> },
             ],
           },
         ],
       },
-
       { index: true, element: <Navigate to="/login" replace /> },
       { path: "*", element: <Navigate to="/login" replace /> },
     ],
   },
-]);
+];
+
+export const routes = isElectron
+  ? createHashRouter(routeElements)
+  : createBrowserRouter(routeElements);

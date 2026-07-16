@@ -5,7 +5,17 @@ import { MdAttachMoney, MdInventory, MdTrendingUp } from "react-icons/md";
 import { Stat } from "../../chart/Stat";
 import { Mode, Period } from "../../../models/analytic";
 import { formatCurrency } from "../../../helpers/formatCurrency";
-import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeadCell,
+  TableRow,
+  Button,
+} from "flowbite-react";
+import { BiShow } from "react-icons/bi";
+import { useNavigate } from "react-router-dom";
 
 export const SupplierAnalyticsTab = () => {
   const [period, setPeriod] = useState<Period>("year");
@@ -13,6 +23,7 @@ export const SupplierAnalyticsTab = () => {
   const [month, setMonth] = useState<number>(new Date().getMonth());
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [range, setRange] = useState<{ startDate: Date; endDate: Date }>();
+  const navigate = useNavigate();
 
   const {
     supplierAnalytics,
@@ -70,6 +81,7 @@ export const SupplierAnalyticsTab = () => {
                 <TableHeadCell className="dark:text-gray-100">Inversión</TableHeadCell>
                 <TableHeadCell className="dark:text-gray-100">Ingresos</TableHeadCell>
                 <TableHeadCell className="dark:text-gray-100">Ganancia</TableHeadCell>
+                <TableHeadCell className="dark:text-gray-100"></TableHeadCell>
               </TableRow>
             </TableHead>
             <TableBody className="divide-y">
@@ -98,6 +110,15 @@ export const SupplierAnalyticsTab = () => {
                     }`}
                   >
                     {formatCurrency(s.profit)}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="xs"
+                      color="gray"
+                      onClick={() => navigate(`/suppliers/${s.supplier_id}`)}
+                    >
+                      <BiShow className="mr-1" /> Ver análisis
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
