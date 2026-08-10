@@ -4,26 +4,36 @@ import { Link } from "react-router-dom";
 import { BiEdit, BiPlus, BiSearch, BiShow, BiTrash } from "react-icons/bi";
 import { useSupplierActions } from "../actions/supplier-actions";
 import { Loading } from "../components/ui/Loading";
-import { useSupplierQuery } from "../queries/useSupplierQuery";
-import { useStore } from "../store/store";
+import { productService } from "../services/productService";
+import { useQuery } from "@tanstack/react-query";
 
 export const SuppliersPage = () => {
   const { suppliersQuery, handleDeleteSupplier } = useSupplierActions();
-  const { suppliersQuery: allSuppliers } = useSupplierQuery();
-  const products = useStore((s) => s.products);
   const [search, setSearch] = useState("");
 
-  const suppliersWithProducts = useMemo(() => {
-    const suppliers = allSuppliers.data ?? [];
-    const lowerSearch = search.toLowerCase();
+  const pairsQuery = useQuery({
+    queryKey: ["productSupplierPairs"],
+    queryFn: () => productService.getAllProductSupplierPairs(),
+    staleTime: 0,
+  });
+  const pairs = useMemo(() => pairsQuery.data ?? [], [pairsQuery.data]);
 
-    return suppliers
-      .map((supplier) => {
-        const supplierProducts = products.filter(
-          (p) => p.supplier_id === supplier.supplier_id
-        );
-        return { ...supplier, productCount: supplierProducts.length };
-      })
+  const supplierProductCount = useMemo(() => {
+    const map = new Map<number, number>();
+    pairs.forEach((p) => {
+      map.set(p.supplier_id, (map.get(p.supplier_id) ?? 0) + 1);
+    });
+    return map;
+  }, [pairs]);
+
+  const suppliers = useMemo(() => {
+    const list = suppliersQuery.data ?? [];
+    const lowerSearch = search.toLowerCase();
+    return list
+      .map((s) => ({
+        ...s,
+        productCount: supplierProductCount.get(s.supplier_id) ?? 0,
+      }))
       .filter((s) => {
         if (!lowerSearch) return true;
         return (
@@ -32,7 +42,7 @@ export const SuppliersPage = () => {
           (s.phone ?? "").toLowerCase().includes(lowerSearch)
         );
       });
-  }, [allSuppliers.data, products, search]);
+  }, [suppliersQuery.data, supplierProductCount, search]);
 
   if (suppliersQuery.isLoading) return <Loading />;
 
@@ -61,7 +71,7 @@ export const SuppliersPage = () => {
       </div>
 
       <div className="mt-4 overflow-x-auto">
-        {suppliersWithProducts.length === 0 ? (
+        {suppliers.length === 0 ? (
           <p className="text-gray-500 dark:text-gray-400 text-center mt-10">
             {search ? "No se encontraron proveedores" : "No hay proveedores registrados"}
           </p>
@@ -80,7 +90,7 @@ export const SuppliersPage = () => {
               </TableRow>
             </TableHead>
             <TableBody className="divide-y">
-              {suppliersWithProducts.map((supplier) => (
+              {suppliers.map((supplier) => (
                 <TableRow key={supplier.supplier_id} className="bg-white dark:bg-gray-800">
                   <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100">
                     {supplier.name}

@@ -3,7 +3,6 @@ import {
   Button,
   HelperText,
   Label,
-  Select,
   Textarea,
   TextInput,
 } from "flowbite-react";
@@ -12,37 +11,28 @@ import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductCreate, productCreateSchema } from "../../models/product";
 import { useStore } from "../../store/store";
-
 import { useProductActions } from "../../actions/product-actions";
-import { useSupplierQuery } from "../../queries/useSupplierQuery";
 
 export const ProductForm = () => {
   const { handleCreateProduct, handleUpdateProduct } = useProductActions();
   const selectedProduct = useStore((s) => s.selectedProduct);
-  const { suppliersQuery } = useSupplierQuery();
   const navigate = useNavigate();
   const {
     handleSubmit,
     register,
     formState: { errors },
   } = useForm<ProductCreate>({
-    defaultValues: selectedProduct ?? { cost: 0, supplier_id: null },
+    defaultValues: selectedProduct ?? { cost: 0 },
     resolver: zodResolver(productCreateSchema),
   });
 
   const onSubmit = (data: ProductCreate) => {
-    const payload = {
-      ...data,
-      supplier_id: data.supplier_id ?? null,
-    };
     if (selectedProduct) {
-      handleUpdateProduct(selectedProduct.product_id, payload, () => navigate(-1));
+      handleUpdateProduct(selectedProduct.product_id, data, () => navigate(-1));
     } else {
-      handleCreateProduct(payload, () => navigate(-1));
+      handleCreateProduct(data, () => navigate(-1));
     }
   };
-
-  const suppliers = suppliersQuery.data ?? [];
 
   return (
     <section className="w-full">
@@ -98,19 +88,6 @@ export const ProductForm = () => {
             type="number"
             {...register("discount", { valueAsNumber: true })}
           />
-        </div>
-        <div>
-          <Label className="text-lg">Proveedor:</Label>
-          <Select
-            {...register("supplier_id", { valueAsNumber: true })}
-          >
-            <option value="">Sin proveedor</option>
-            {suppliers.map((s) => (
-              <option key={s.supplier_id} value={s.supplier_id}>
-                {s.name}
-              </option>
-            ))}
-          </Select>
         </div>
         <div>
           <Label className="text-lg">Stock:</Label>

@@ -11,10 +11,11 @@ export const useSupplierActions = () => {
     deleteSupplierMutation,
   } = useSupplierQuery();
 
-  const handleCreateSupplier = (data: SupplierCreate) => {
+  const handleCreateSupplier = (data: SupplierCreate, onSuccess?: () => void) => {
     createSupplierMutation.mutate(data, {
       onSuccess: () => {
         toast.success("Proveedor creado exitosamente");
+        onSuccess?.();
       },
       onError: () => {
         toast.error("Error al crear el proveedor");
@@ -22,10 +23,11 @@ export const useSupplierActions = () => {
     });
   };
 
-  const handleUpdateSupplier = (id: number, data: Partial<SupplierCreate>) => {
+  const handleUpdateSupplier = (id: number, data: Partial<SupplierCreate>, onSuccess?: () => void) => {
     updateSupplierMutation.mutate({ id, s: data }, {
       onSuccess: () => {
         toast.success("Proveedor actualizado exitosamente");
+        onSuccess?.();
       },
       onError: () => {
         toast.error("Error al actualizar el proveedor");

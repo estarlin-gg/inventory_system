@@ -2,6 +2,8 @@ import { supabase } from "../lib/supabase";
 import { Supplier, SupplierCreate } from "../models/supplier";
 import { Product } from "../models/product";
 
+type ProductWithSupplierStock = Product & { supplier_stock: number };
+
 const getCurrentUserId = async (): Promise<string> => {
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) throw new Error("No hay usuario autenticado");
@@ -31,15 +33,20 @@ const getSupplier = async (id: number): Promise<Supplier> => {
   return data as Supplier;
 };
 
-const getSupplierProducts = async (id: number): Promise<Product[]> => {
+const getSupplierProducts = async (id: number): Promise<ProductWithSupplierStock[]> => {
   const userId = await getCurrentUserId();
   const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("supplier_id", id)
-    .eq("user_id", userId);
+    .from("product_suppliers")
+    .select("stock, products(*)")
+    .eq("supplier_id", id);
   if (error) throw error;
-  return data as Product[];
+  return ((data ?? []) as Record<string, unknown>[])
+    .map((row) => {
+      const product = row.products as Product;
+      if (!product || product.user_id !== userId) return null;
+      return { ...product, stock: row.stock as number, supplier_stock: row.stock as number };
+    })
+    .filter(Boolean) as ProductWithSupplierStock[];
 };
 
 const createSupplier = async (s: SupplierCreate): Promise<Supplier> => {

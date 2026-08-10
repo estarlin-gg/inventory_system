@@ -7,6 +7,7 @@ import { isElectron } from "../utils/platform";
 
 export const useAuthListener = () => {
   const setAuthResponse = useStore((state) => state.setAuthResponse);
+  const setAuthChecked = useStore((state) => state.setAuthChecked);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,9 +29,8 @@ export const useAuthListener = () => {
           } else if (!cancelled) {
             navigate("/login");
           }
-        } else if (!cancelled) {
-          navigate("/login");
         }
+        if (!cancelled) setAuthChecked(true);
       } else if (event === "SIGNED_IN" && session?.user) {
         setAuthResponse(session.user);
         if (isElectron) offlineService.auth.save(session.user);
@@ -45,5 +45,5 @@ export const useAuthListener = () => {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, [setAuthResponse, navigate]);
+  }, [setAuthResponse, setAuthChecked, navigate]);
 };

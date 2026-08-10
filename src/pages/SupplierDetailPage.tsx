@@ -10,16 +10,26 @@ import {
   Tabs,
   TabItem,
   TextInput,
+  Button,
+  Select,
 } from "flowbite-react";
-import { BiSearch } from "react-icons/bi";
-import { MdAttachMoney, MdInventory, MdTrendingUp } from "react-icons/md";
+import { BiSearch, BiPlus, BiTrash } from "react-icons/bi";
+import { MdAttachMoney, MdStorage, MdDelete, MdTrendingUp } from "react-icons/md";
 import { Stat } from "../components/chart/Stat";
 import { Loading } from "../components/ui/Loading";
 import { useSupplierQuery, useSupplierProductsQuery } from "../queries/useSupplierQuery";
-import { useHistoryQuery } from "../queries/useHistoryQuery";
-import { useStore } from "../store/store";
+import { useInvestmentQuery } from "../queries/useInvestmentQuery";
+import { useProductQuery } from "../queries/useProductQuery";
+import { InvestmentForm } from "../components/suppliers/InvestmentForm";
 import { formatCurrency } from "../helpers/formatCurrency";
+import { useStore } from "../store/store";
 import { useMemo, useState } from "react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import { productService } from "../services/productService";
+import { queryClient } from "../queries/queryClient";
 
 export const SupplierDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,13 +37,45 @@ export const SupplierDetailPage = () => {
 
   const { suppliersQuery } = useSupplierQuery();
   const { supplierProductsQuery } = useSupplierProductsQuery(supplierId);
-  const { historyQuery } = useHistoryQuery();
+  const { investmentsQuery, deleteInvestmentMutation } = useInvestmentQuery(supplierId);
+  const { productsQuery } = useProductQuery();
   const sales = useStore((s) => s.sales);
-  const allProducts = useStore((s) => s.products);
 
   const supplier = suppliersQuery.data?.find((s) => s.supplier_id === supplierId);
   const products = useMemo(() => supplierProductsQuery.data ?? [], [supplierProductsQuery.data]);
+  const investments = useMemo(() => investmentsQuery.data ?? [], [investmentsQuery.data]);
+  const allProducts = useMemo(() => productsQuery.data ?? [], [productsQuery.data]);
   const [search, setSearch] = useState("");
+  const [addProductId, setAddProductId] = useState<number | "">("");
+
+  const availableProducts = useMemo(() => {
+    const linkedIds = new Set(products.map((p) => p.product_id));
+    return allProducts.filter((p) => !linkedIds.has(p.product_id));
+  }, [allProducts, products]);
+
+  const inventoryValue = useMemo(
+    () => products.reduce((sum, p) => sum + p.cost * p.stock, 0),
+    [products]
+  );
+
+  const totalInvested = useMemo(
+    () => investments.reduce((sum, inv) => sum + inv.total_cost, 0),
+    [investments]
+  );
+
+  const filteredProducts = useMemo(() => {
+    const q = search.toLowerCase();
+    if (!q) return products;
+    return products.filter((p) => p.product_name.toLowerCase().includes(q));
+  }, [products, search]);
+
+  const supplierProductIds = useMemo(() => new Set(products.map((p) => p.product_id)), [products]);
+
+  const supplierSales = useMemo(() => {
+    return sales.filter((sale) =>
+      sale.sale_products.some((sp) => supplierProductIds.has(sp.product_id))
+    );
+  }, [sales, supplierProductIds]);
 
   const allProductCostMap = useMemo(() => {
     const map = new Map<number, number>();
@@ -41,19 +83,9 @@ export const SupplierDetailPage = () => {
     return map;
   }, [allProducts]);
 
-  const supplierSales = useMemo(() => {
-    return sales.filter((sale) =>
-      sale.sale_products.some((sp) =>
-        products.some((p) => p.product_id === sp.product_id)
-      )
-    );
-  }, [sales, products]);
-
   const stats = useMemo(() => {
     let totalInvestment = 0;
     let totalRevenue = 0;
-
-    const supplierProductIds = new Set(products.map((p) => p.product_id));
 
     supplierSales.forEach((sale) => {
       sale.sale_products.forEach((sp) => {
@@ -72,7 +104,7 @@ export const SupplierDetailPage = () => {
       totalRevenue,
       totalProfit: totalRevenue - totalInvestment,
     };
-  }, [supplierSales, products, allProductCostMap]);
+  }, [supplierSales, supplierProductIds, allProductCostMap]);
 
   const productStats = useMemo(() => {
     const map: Record<
@@ -80,28 +112,25 @@ export const SupplierDetailPage = () => {
       { name: string; cost: number; price: number; units: number; totalRevenue: number; totalCost: number }
     > = {};
 
-    const supplierProductIds = new Set(products.map((p) => p.product_id));
-
     supplierSales.forEach((sale) => {
       sale.sale_products.forEach((sp) => {
         if (supplierProductIds.has(sp.product_id)) {
           if (!map[sp.product_id]) {
-            const currentCost = allProductCostMap.get(sp.product_id) ?? 0;
             map[sp.product_id] = {
               name: sp.product_name,
-              cost: currentCost,
+              cost: allProductCostMap.get(sp.product_id) ?? 0,
               price: sp.price,
               units: 0,
               totalRevenue: 0,
               totalCost: 0,
             };
           }
+          const entry = map[sp.product_id];
           const saleCost = sp.cost ?? 0;
-          const currentCost = allProductCostMap.get(sp.product_id) ?? 0;
-          const effectiveCost = saleCost > 0 ? saleCost : currentCost;
-          map[sp.product_id].units += sp.quantity;
-          map[sp.product_id].totalRevenue += sp.price * sp.quantity;
-          map[sp.product_id].totalCost += effectiveCost * sp.quantity;
+          const effectiveCost = saleCost > 0 ? saleCost : (allProductCostMap.get(sp.product_id) ?? 0);
+          entry.units += sp.quantity;
+          entry.totalRevenue += sp.price * sp.quantity;
+          entry.totalCost += effectiveCost * sp.quantity;
         }
       });
     });
@@ -111,13 +140,7 @@ export const SupplierDetailPage = () => {
       ...data,
       profit: data.totalRevenue - data.totalCost,
     }));
-  }, [supplierSales, products, allProductCostMap]);
-
-  const filteredProducts = useMemo(() => {
-    const q = search.toLowerCase();
-    if (!q) return products;
-    return products.filter((p) => p.product_name.toLowerCase().includes(q));
-  }, [products, search]);
+  }, [supplierSales, supplierProductIds, allProductCostMap]);
 
   const filteredProductStats = useMemo(() => {
     const q = search.toLowerCase();
@@ -125,7 +148,44 @@ export const SupplierDetailPage = () => {
     return productStats.filter((p) => p.name.toLowerCase().includes(q));
   }, [productStats, search]);
 
-  if (suppliersQuery.isLoading || supplierProductsQuery.isLoading || historyQuery.isLoading) {
+  const handleAddProduct = async () => {
+    if (!addProductId) return;
+    try {
+      await productService.addProductToSupplier(Number(addProductId), supplierId);
+      await queryClient.invalidateQueries({ queryKey: ["supplierProducts", supplierId] });
+      await queryClient.refetchQueries({ queryKey: ["supplierProducts", supplierId] });
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      setAddProductId("");
+      toast.success("Producto agregado al proveedor");
+    } catch {
+      toast.error("Error al agregar producto");
+    }
+  };
+
+  const handleRemoveProduct = (productId: number, productName: string) => {
+    Swal.fire({
+      title: `¿Quitar "${productName}" de este proveedor?`,
+      text: "El producto no se elimina, solo se desvincula.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, quitar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await productService.removeProductFromSupplier(productId, supplierId);
+          await queryClient.invalidateQueries({ queryKey: ["supplierProducts", supplierId] });
+          await queryClient.refetchQueries({ queryKey: ["supplierProducts", supplierId] });
+          await queryClient.invalidateQueries({ queryKey: ["products"] });
+          toast.success("Producto removido del proveedor");
+        } catch {
+          toast.error("Error al remover producto");
+        }
+      }
+    });
+  };
+
+  if (suppliersQuery.isLoading || supplierProductsQuery.isLoading) {
     return <Loading />;
   }
 
@@ -150,53 +210,53 @@ export const SupplierDetailPage = () => {
 
       <div className="border-b border-gray-300 py-2 mt-2">
         <h2 className="text-3xl font-medium">{supplier.name}</h2>
-        {supplier.phone && (
-          <p className="text-gray-500 dark:text-gray-400">Tel: {supplier.phone}</p>
-        )}
-        {supplier.email && (
-          <p className="text-gray-500 dark:text-gray-400">Email: {supplier.email}</p>
-        )}
+        <div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400">
+          {supplier.phone && <span>Tel: {supplier.phone}</span>}
+          {supplier.email && <span>Email: {supplier.email}</span>}
+        </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
         <Stat
-          title="Inversión total"
-          data={formatCurrency(stats.totalInvestment)}
+          title="Invertido (inventario)"
+          data={formatCurrency(inventoryValue)}
+          icon={MdStorage}
+        />
+        <Stat
+          title="Invertido (historial)"
+          data={formatCurrency(totalInvested)}
           icon={MdAttachMoney}
         />
         <Stat
-          title="Ingresos totales"
+          title="Ingresos (ventas)"
           data={formatCurrency(stats.totalRevenue)}
-          icon={MdInventory}
+          icon={MdTrendingUp}
         />
         <Stat
-          title="Ganancia"
+          title="Ganancia (ventas)"
           data={formatCurrency(stats.totalProfit)}
           icon={MdTrendingUp}
         />
       </div>
 
-      <div className="mt-4 flex flex-col md:flex-row gap-3">
-        <div className="max-w-md w-full">
-          <TextInput
-            sizing="md"
-            type="search"
-            icon={BiSearch}
-            placeholder="Buscar producto..."
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <Tabs aria-label="Tabs" variant="underline" className="mt-1 border-none">
-        <TabItem title="Productos">
+      <Tabs aria-label="Supplier tabs" variant="underline" className="mt-6 border-none">
+        <TabItem title={`Productos (${products.length})`}>
           <div className="mt-4">
+            <TextInput
+              sizing="md"
+              type="search"
+              icon={BiSearch}
+              placeholder="Buscar producto..."
+              className="max-w-md"
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
             {filteredProducts.length === 0 ? (
               <p className="text-center text-gray-500 dark:text-gray-400 py-10">
-                {search ? "No se encontraron productos" : "Este proveedor no tiene productos asociados"}
+                {search ? "No se encontraron productos" : "Este proveedor no tiene productos vinculados."}
               </p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="mt-4 overflow-x-auto">
                 <Table striped>
                   <TableHead>
                     <TableRow className="bg-gray-100 dark:bg-gray-900">
@@ -204,6 +264,7 @@ export const SupplierDetailPage = () => {
                       <TableHeadCell className="dark:text-gray-100">Costo</TableHeadCell>
                       <TableHeadCell className="dark:text-gray-100">Precio venta</TableHeadCell>
                       <TableHeadCell className="dark:text-gray-100">Stock</TableHeadCell>
+                      <TableHeadCell className="dark:text-gray-100">Inversión</TableHeadCell>
                     </TableRow>
                   </TableHead>
                   <TableBody className="divide-y">
@@ -215,6 +276,9 @@ export const SupplierDetailPage = () => {
                         <TableCell className="dark:text-gray-300">{formatCurrency(p.cost)}</TableCell>
                         <TableCell className="dark:text-gray-300">{formatCurrency(p.final_price)}</TableCell>
                         <TableCell className="dark:text-gray-300">{p.stock}</TableCell>
+                        <TableCell className="dark:text-gray-300 font-medium">
+                          {formatCurrency(p.cost * p.stock)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -224,7 +288,7 @@ export const SupplierDetailPage = () => {
           </div>
         </TabItem>
 
-        <TabItem title="Análisis">
+        <TabItem title="Análisis de ventas">
           <div className="mt-4">
             {filteredProductStats.length === 0 ? (
               <p className="text-center text-gray-500 dark:text-gray-400 py-10">
@@ -266,6 +330,136 @@ export const SupplierDetailPage = () => {
                 </Table>
               </div>
             )}
+          </div>
+        </TabItem>
+
+        <TabItem title={`Inversiones (${investments.length})`}>
+          <div className="mt-4">
+            <div className="mb-6">
+              <h3 className="text-lg font-medium mb-3">Vincular productos al proveedor</h3>
+              <div className="flex gap-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <Select
+                  className="flex-1"
+                  value={addProductId}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setAddProductId(val === "" ? "" : Number(val));
+                  }}
+                >
+                  <option value="">Seleccionar producto para vincular...</option>
+                  {availableProducts.map((p) => (
+                    <option key={p.product_id} value={p.product_id}>
+                      {p.product_name}
+                    </option>
+                  ))}
+                </Select>
+                <Button
+                  color="green"
+                  size="sm"
+                  onClick={handleAddProduct}
+                  disabled={!addProductId}
+                >
+                  <BiPlus size={16} className="mr-1" /> Vincular
+                </Button>
+              </div>
+              {products.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {products.map((p) => (
+                    <span
+                      key={p.product_id}
+                      className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full"
+                    >
+                      {p.product_name}
+                      <button
+                        onClick={() => handleRemoveProduct(p.product_id, p.product_name)}
+                        className="text-red-500 hover:text-red-700 ml-1"
+                      >
+                        <BiTrash size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <InvestmentForm supplierId={supplierId} />
+
+            <div className="mt-6">
+              <h3 className="text-lg font-medium mb-3">Registro de inversiones</h3>
+
+              {investments.length === 0 ? (
+                <p className="text-center text-gray-500 dark:text-gray-400 py-10">
+                  No hay inversiones registradas para este proveedor
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table striped>
+                    <TableHead>
+                      <TableRow className="bg-gray-100 dark:bg-gray-900">
+                        <TableHeadCell className="dark:text-gray-100">Fecha</TableHeadCell>
+                        <TableHeadCell className="dark:text-gray-100">Producto</TableHeadCell>
+                        <TableHeadCell className="dark:text-gray-100">Cantidad</TableHeadCell>
+                        <TableHeadCell className="dark:text-gray-100">Costo unit.</TableHeadCell>
+                        <TableHeadCell className="dark:text-gray-100">Total</TableHeadCell>
+                        <TableHeadCell className="dark:text-gray-100">Nota</TableHeadCell>
+                        <TableHeadCell className="dark:text-gray-100"></TableHeadCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody className="divide-y">
+                      {investments.map((inv) => (
+                        <TableRow key={inv.id} className="bg-white dark:bg-gray-800">
+                          <TableCell className="dark:text-gray-300 whitespace-nowrap">
+                            {format(new Date(inv.created_at), "dd MMM yyyy HH:mm", { locale: es })}
+                          </TableCell>
+                          <TableCell className="font-medium text-gray-900 dark:text-gray-100">
+                            {inv.product_name}
+                          </TableCell>
+                          <TableCell className="dark:text-gray-300">{inv.quantity}</TableCell>
+                          <TableCell className="dark:text-gray-300">
+                            {formatCurrency(inv.unit_cost)}
+                          </TableCell>
+                          <TableCell className="dark:text-gray-300 font-medium">
+                            {formatCurrency(inv.total_cost)}
+                          </TableCell>
+                          <TableCell className="dark:text-gray-400 text-sm max-w-[150px] truncate">
+                            {inv.note || "-"}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="xs"
+                              color="red"
+                              onClick={() => {
+                                Swal.fire({
+                                  title: "Eliminar inversión?",
+                                  icon: "warning",
+                                  showCancelButton: true,
+                                  confirmButtonText: "Sí, eliminar",
+                                  cancelButtonText: "Cancelar",
+                                }).then((result) => {
+                                  if (result.isConfirmed) {
+                                    deleteInvestmentMutation.mutate(inv.id, {
+                                      onSuccess: () => Swal.fire("Eliminado", "", "success"),
+                                    });
+                                  }
+                                });
+                              }}
+                            >
+                              <MdDelete size={14} />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg flex justify-end">
+                <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Total invertido: {formatCurrency(totalInvested)}
+                </span>
+              </div>
+            </div>
           </div>
         </TabItem>
       </Tabs>

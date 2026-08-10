@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { useStore } from "../store/store";
 import { Mode, Period, Range } from "../models/analytic";
 import { useSupplierQuery } from "../queries/useSupplierQuery";
+import { productService } from "../services/productService";
+import { useQuery } from "@tanstack/react-query";
 import {
   isSameDay,
   isSameWeek,
@@ -17,6 +19,8 @@ export interface SupplierAnalytics {
   profit: number;
   productsBought: number;
   totalUnits: number;
+  inventoryInvestment: number;
+  totalStock: number;
 }
 
 export const useSupplierAnalytics = (
@@ -32,6 +36,23 @@ export const useSupplierAnalytics = (
   const products = useStore((s) => s.products);
   const { suppliersQuery } = useSupplierQuery();
   const suppliers = useMemo(() => suppliersQuery.data ?? [], [suppliersQuery.data]);
+
+  const pairsQuery = useQuery({
+    queryKey: ["productSupplierPairs"],
+    queryFn: () => productService.getAllProductSupplierPairs(),
+    staleTime: 0,
+  });
+  const pairs = useMemo(() => pairsQuery.data ?? [], [pairsQuery.data]);
+
+  const productToSuppliers = useMemo(() => {
+    const map = new Map<number, Set<number>>();
+    pairs.forEach((p) => {
+      if (!map.has(p.product_id)) map.set(p.product_id, new Set());
+      map.get(p.product_id)!.add(p.supplier_id);
+    });
+    return map;
+  }, [pairs]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const today = new Date();
 
@@ -93,9 +114,9 @@ export const useSupplierAnalytics = (
   }, [mode, period, sales, options, today]);
 
   const supplierAnalytics: SupplierAnalytics[] = useMemo(() => {
-    const productMap = new Map<number, { cost: number; supplier_id: number | null; discount: number }>();
+    const productMap = new Map<number, { cost: number; discount: number; stock: number }>();
     products.forEach((p) =>
-      productMap.set(p.product_id, { cost: p.cost, supplier_id: p.supplier_id ?? null, discount: p.discount ?? 0 })
+      productMap.set(p.product_id, { cost: p.cost, discount: p.discount ?? 0, stock: p.stock })
     );
 
     const supplierNameMap = new Map<number, string>();
@@ -108,34 +129,61 @@ export const useSupplierAnalytics = (
         totalRevenue: number;
         productsSet: Set<number>;
         totalUnits: number;
+        inventoryInvestment: number;
+        totalStock: number;
       }
     > = {};
 
-    filteredSales.forEach((sale) => {
-      sale.sale_products.forEach((sp) => {
-        const prod = productMap.get(sp.product_id);
-        const supplierId = prod?.supplier_id;
-        if (supplierId) {
-          if (!map[supplierId]) {
-            map[supplierId] = {
+    products.forEach((p) => {
+      const supplierIds = productToSuppliers.get(p.product_id);
+      if (supplierIds) {
+        supplierIds.forEach((sid) => {
+          if (!map[sid]) {
+            map[sid] = {
               totalInvestment: 0,
               totalRevenue: 0,
               productsSet: new Set(),
               totalUnits: 0,
+              inventoryInvestment: 0,
+              totalStock: 0,
             };
           }
-          const entry = map[supplierId];
-          const saleCost = sp.cost ?? 0;
-          const currentCost = prod?.cost ?? 0;
-          const effectiveCost = saleCost > 0 ? saleCost : currentCost;
-          const discountPct = prod?.discount ?? 0;
-          const effectivePrice = discountPct > 0
-            ? sp.price - sp.price * (discountPct / 100)
-            : sp.price;
-          entry.totalInvestment += effectiveCost * sp.quantity;
-          entry.totalRevenue += effectivePrice * sp.quantity;
-          entry.productsSet.add(sp.product_id);
-          entry.totalUnits += sp.quantity;
+          map[sid].inventoryInvestment += p.cost * p.stock;
+          map[sid].totalStock += p.stock;
+          map[sid].productsSet.add(p.product_id);
+        });
+      }
+    });
+
+    filteredSales.forEach((sale) => {
+      sale.sale_products.forEach((sp) => {
+        const supplierIds = productToSuppliers.get(sp.product_id);
+        if (supplierIds) {
+          const prod = productMap.get(sp.product_id);
+          supplierIds.forEach((supplierId) => {
+            if (!map[supplierId]) {
+              map[supplierId] = {
+                totalInvestment: 0,
+                totalRevenue: 0,
+                productsSet: new Set(),
+                totalUnits: 0,
+                inventoryInvestment: 0,
+                totalStock: 0,
+              };
+            }
+            const entry = map[supplierId];
+            const saleCost = sp.cost ?? 0;
+            const currentCost = prod?.cost ?? 0;
+            const effectiveCost = saleCost > 0 ? saleCost : currentCost;
+            const discountPct = prod?.discount ?? 0;
+            const effectivePrice = discountPct > 0
+              ? sp.price - sp.price * (discountPct / 100)
+              : sp.price;
+            entry.totalInvestment += effectiveCost * sp.quantity;
+            entry.totalRevenue += effectivePrice * sp.quantity;
+            entry.productsSet.add(sp.product_id);
+            entry.totalUnits += sp.quantity;
+          });
         }
       });
     });
@@ -149,9 +197,11 @@ export const useSupplierAnalytics = (
         profit: data.totalRevenue - data.totalInvestment,
         productsBought: data.productsSet.size,
         totalUnits: data.totalUnits,
+        inventoryInvestment: data.inventoryInvestment,
+        totalStock: data.totalStock,
       }))
-      .sort((a, b) => b.totalInvestment - a.totalInvestment);
-  }, [filteredSales, products, suppliers]);
+      .sort((a, b) => b.inventoryInvestment - a.inventoryInvestment);
+  }, [filteredSales, products, suppliers, productToSuppliers]);
 
   const totalInvestment = supplierAnalytics.reduce(
     (sum, s) => sum + s.totalInvestment,
@@ -162,6 +212,10 @@ export const useSupplierAnalytics = (
     0
   );
   const totalProfit = totalRevenue - totalInvestment;
+  const totalInventoryInvestment = supplierAnalytics.reduce(
+    (sum, s) => sum + s.inventoryInvestment,
+    0
+  );
 
   return {
     filteredSales,
@@ -169,5 +223,6 @@ export const useSupplierAnalytics = (
     totalInvestment,
     totalRevenue,
     totalProfit,
+    totalInventoryInvestment,
   };
 };

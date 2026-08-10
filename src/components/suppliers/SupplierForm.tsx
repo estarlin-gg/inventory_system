@@ -54,11 +54,10 @@ export const SupplierForm = () => {
 
   const onSubmit = (data: SupplierCreate) => {
     if (isEdit) {
-      handleUpdateSupplier(Number(id), data);
+      handleUpdateSupplier(Number(id), data, () => navigate(-1));
     } else {
-      handleCreateSupplier(data);
+      handleCreateSupplier(data, () => navigate(-1));
     }
-    navigate(-1);
   };
 
   return (

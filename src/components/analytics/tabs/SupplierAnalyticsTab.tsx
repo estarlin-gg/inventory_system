@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AnalyticsSelect } from "../AnalyticsSelect";
 import { useSupplierAnalytics } from "../../../hooks/useSupplierAnalytics";
-import { MdAttachMoney, MdInventory, MdTrendingUp } from "react-icons/md";
+import { MdInventory, MdTrendingUp, MdStorage } from "react-icons/md";
 import { Stat } from "../../chart/Stat";
 import { Mode, Period } from "../../../models/analytic";
 import { formatCurrency } from "../../../helpers/formatCurrency";
@@ -27,7 +27,7 @@ export const SupplierAnalyticsTab = () => {
 
   const {
     supplierAnalytics,
-    totalInvestment,
+    totalInventoryInvestment,
     totalRevenue,
     totalProfit,
   } = useSupplierAnalytics(period, mode, { month, year, range });
@@ -50,9 +50,9 @@ export const SupplierAnalyticsTab = () => {
 
       <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
         <Stat
-          title="Inversión total"
-          data={formatCurrency(totalInvestment)}
-          icon={MdAttachMoney}
+          title="Inversión en inventario"
+          data={formatCurrency(totalInventoryInvestment)}
+          icon={MdStorage}
         />
         <Stat
           title="Ingresos totales"
@@ -77,10 +77,11 @@ export const SupplierAnalyticsTab = () => {
               <TableRow className="bg-gray-100 dark:bg-gray-900">
                 <TableHeadCell className="dark:text-gray-100">Proveedor</TableHeadCell>
                 <TableHeadCell className="dark:text-gray-100">Productos</TableHeadCell>
-                <TableHeadCell className="dark:text-gray-100">Unidades</TableHeadCell>
-                <TableHeadCell className="dark:text-gray-100">Inversión</TableHeadCell>
-                <TableHeadCell className="dark:text-gray-100">Ingresos</TableHeadCell>
-                <TableHeadCell className="dark:text-gray-100">Ganancia</TableHeadCell>
+                <TableHeadCell className="dark:text-gray-100">Stock total</TableHeadCell>
+                <TableHeadCell className="dark:text-gray-100">Inversión inventario</TableHeadCell>
+                <TableHeadCell className="dark:text-gray-100">Unidades vendidas</TableHeadCell>
+                <TableHeadCell className="dark:text-gray-100">Ingresos ventas</TableHeadCell>
+                <TableHeadCell className="dark:text-gray-100">Ganancia ventas</TableHeadCell>
                 <TableHeadCell className="dark:text-gray-100"></TableHeadCell>
               </TableRow>
             </TableHead>
@@ -94,10 +95,13 @@ export const SupplierAnalyticsTab = () => {
                     {s.productsBought}
                   </TableCell>
                   <TableCell className="dark:text-gray-300">
-                    {s.totalUnits}
+                    {s.totalStock}
                   </TableCell>
                   <TableCell className="dark:text-gray-300">
-                    {formatCurrency(s.totalInvestment)}
+                    {formatCurrency(s.inventoryInvestment)}
+                  </TableCell>
+                  <TableCell className="dark:text-gray-300">
+                    {s.totalUnits}
                   </TableCell>
                   <TableCell className="dark:text-gray-300">
                     {formatCurrency(s.totalRevenue)}

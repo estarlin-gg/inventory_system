@@ -3,6 +3,7 @@ import { GeneralAnalyticsTab } from "../components/analytics/tabs/GeneralAnalyti
 import { ProductAnalyticsTab } from "../components/analytics/tabs/ProductAnalyticsTab";
 import { SupplierAnalyticsTab } from "../components/analytics/tabs/SupplierAnalyticsTab";
 import { FinancialTab } from "../components/analytics/tabs/FinancialTab";
+import { NoSupplierAnalyticsTab } from "../components/analytics/tabs/NoSupplierAnalyticsTab";
 import { useProductQuery } from "../queries/useProductQuery";
 import { useHistoryQuery } from "../queries/useHistoryQuery";
 import { useSupplierQuery } from "../queries/useSupplierQuery";
@@ -31,6 +32,9 @@ export const AnalyticsPage = () => {
         </TabItem>
         <TabItem title="Proveedores">
           <SupplierAnalyticsTab />
+        </TabItem>
+        <TabItem title="Sin proveedor">
+          <NoSupplierAnalyticsTab />
         </TabItem>
         <TabItem title="Finanzas">
           <FinancialTab />
