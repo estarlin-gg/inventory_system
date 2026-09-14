@@ -3,6 +3,7 @@ import Swal from "sweetalert2";
 
 import { ProductCreate } from "../models/product";
 import { queryClient } from "../queries/queryClient";
+import { useStore } from "../store/store";
 
 export const useProductActions = () => {
   const {
@@ -11,10 +12,13 @@ export const useProductActions = () => {
     updateProductMutation,
     deleteProductMutation,
   } = useProductQuery();
+  const setLoading = useStore((s) => s.setLoading);
 
   // CREATE
   const handleCreateProduct = (data: ProductCreate, onSuccess?: () => void) => {
+    setLoading(true);
     createProductMutation.mutate(data, {
+      onSettled: () => setLoading(false),
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ["products"] });
         await queryClient.refetchQueries({ queryKey: ["products"] });
@@ -30,9 +34,11 @@ export const useProductActions = () => {
 
   // UPDATE
   const handleUpdateProduct = (id: number, p: ProductCreate, onSuccess?: () => void) => {
+    setLoading(true);
     updateProductMutation.mutate(
       { id, p },
       {
+        onSettled: () => setLoading(false),
         onSuccess: async () => {
           await queryClient.invalidateQueries({ queryKey: ["products"] });
           await queryClient.refetchQueries({ queryKey: ["products"] });
@@ -49,7 +55,9 @@ export const useProductActions = () => {
 
   // DELETE
   const handleDeleteProduct = (id: number) => {
+    setLoading(true);
     deleteProductMutation.mutate(id, {
+      onSettled: () => setLoading(false),
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ["products"] });
         await queryClient.refetchQueries({ queryKey: ["products"] });

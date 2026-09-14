@@ -40,6 +40,7 @@ export const SupplierDetailPage = () => {
   const { investmentsQuery, deleteInvestmentMutation } = useInvestmentQuery(supplierId);
   const { productsQuery } = useProductQuery();
   const sales = useStore((s) => s.sales);
+  const setLoading = useStore((s) => s.setLoading);
 
   const supplier = suppliersQuery.data?.find((s) => s.supplier_id === supplierId);
   const products = useMemo(() => supplierProductsQuery.data ?? [], [supplierProductsQuery.data]);
@@ -150,6 +151,7 @@ export const SupplierDetailPage = () => {
 
   const handleAddProduct = async () => {
     if (!addProductId) return;
+    setLoading(true);
     try {
       await productService.addProductToSupplier(Number(addProductId), supplierId);
       await queryClient.invalidateQueries({ queryKey: ["supplierProducts", supplierId] });
@@ -159,6 +161,8 @@ export const SupplierDetailPage = () => {
       toast.success("Producto agregado al proveedor");
     } catch {
       toast.error("Error al agregar producto");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -172,6 +176,7 @@ export const SupplierDetailPage = () => {
       cancelButtonText: "Cancelar",
     }).then(async (result) => {
       if (result.isConfirmed) {
+        setLoading(true);
         try {
           await productService.removeProductFromSupplier(productId, supplierId);
           await queryClient.invalidateQueries({ queryKey: ["supplierProducts", supplierId] });
@@ -180,6 +185,8 @@ export const SupplierDetailPage = () => {
           toast.success("Producto removido del proveedor");
         } catch {
           toast.error("Error al remover producto");
+        } finally {
+          setLoading(false);
         }
       }
     });
@@ -437,7 +444,9 @@ export const SupplierDetailPage = () => {
                                   cancelButtonText: "Cancelar",
                                 }).then((result) => {
                                   if (result.isConfirmed) {
+                                    setLoading(true);
                                     deleteInvestmentMutation.mutate(inv.id, {
+                                      onSettled: () => setLoading(false),
                                       onSuccess: () => Swal.fire("Eliminado", "", "success"),
                                     });
                                   }

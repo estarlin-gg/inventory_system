@@ -33,9 +33,11 @@ export const ProductCard = ({ product, type }: ProductCardProps) => {
         )}
       </div>
 
-      <p className="font-normal line-clamp-3 text-gray-700 dark:text-gray-400">
-        {product.description}
-      </p>
+      {product.description && (
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+          {product.description}
+        </p>
+      )}
 
       <div className="flex items-baseline gap-2">
         <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">

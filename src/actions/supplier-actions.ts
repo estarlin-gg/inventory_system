@@ -2,6 +2,7 @@ import { useSupplierQuery } from "../queries/useSupplierQuery";
 import { SupplierCreate } from "../models/supplier";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { useStore } from "../store/store";
 
 export const useSupplierActions = () => {
   const {
@@ -10,9 +11,12 @@ export const useSupplierActions = () => {
     updateSupplierMutation,
     deleteSupplierMutation,
   } = useSupplierQuery();
+  const setLoading = useStore((s) => s.setLoading);
 
   const handleCreateSupplier = (data: SupplierCreate, onSuccess?: () => void) => {
+    setLoading(true);
     createSupplierMutation.mutate(data, {
+      onSettled: () => setLoading(false),
       onSuccess: () => {
         toast.success("Proveedor creado exitosamente");
         onSuccess?.();
@@ -24,7 +28,9 @@ export const useSupplierActions = () => {
   };
 
   const handleUpdateSupplier = (id: number, data: Partial<SupplierCreate>, onSuccess?: () => void) => {
+    setLoading(true);
     updateSupplierMutation.mutate({ id, s: data }, {
+      onSettled: () => setLoading(false),
       onSuccess: () => {
         toast.success("Proveedor actualizado exitosamente");
         onSuccess?.();
@@ -47,7 +53,9 @@ export const useSupplierActions = () => {
       cancelButtonText: "Cancelar",
     }).then((result) => {
       if (result.isConfirmed) {
+        setLoading(true);
         deleteSupplierMutation.mutate(id, {
+          onSettled: () => setLoading(false),
           onSuccess: () => {
             Swal.fire("Eliminado", "Proveedor eliminado", "success");
           },

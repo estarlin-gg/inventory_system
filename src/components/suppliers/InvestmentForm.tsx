@@ -4,6 +4,7 @@ import { useInvestmentQuery } from "../../queries/useInvestmentQuery";
 import { useSupplierProductsQuery } from "../../queries/useSupplierQuery";
 import { toast } from "react-toastify";
 import { InvestmentCreate } from "../../models/investment";
+import { useStore } from "../../store/store";
 
 interface InvestmentFormProps {
   supplierId: number;
@@ -12,6 +13,7 @@ interface InvestmentFormProps {
 export const InvestmentForm = ({ supplierId }: InvestmentFormProps) => {
   const { supplierProductsQuery } = useSupplierProductsQuery(supplierId);
   const { createInvestmentMutation, investmentsQuery } = useInvestmentQuery(supplierId);
+  const setLoading = useStore((s) => s.setLoading);
 
   const supplierProducts = useMemo(() => supplierProductsQuery.data ?? [], [supplierProductsQuery.data]);
 
@@ -34,7 +36,9 @@ export const InvestmentForm = ({ supplierId }: InvestmentFormProps) => {
       note: note || undefined,
     };
 
+    setLoading(true);
     createInvestmentMutation.mutate(payload, {
+      onSettled: () => setLoading(false),
       onSuccess: () => {
         toast.success("Inversión registrada");
         setQuantity(1);
