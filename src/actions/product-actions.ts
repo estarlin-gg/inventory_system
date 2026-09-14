@@ -15,59 +15,52 @@ export const useProductActions = () => {
   const setLoading = useStore((s) => s.setLoading);
 
   // CREATE
-  const handleCreateProduct = (data: ProductCreate, onSuccess?: () => void) => {
+  const handleCreateProduct = async (data: ProductCreate, onSuccess?: () => void) => {
     setLoading(true);
-    createProductMutation.mutate(data, {
-      onSettled: () => setLoading(false),
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: ["products"] });
-        await queryClient.refetchQueries({ queryKey: ["products"] });
-        Swal.fire("Éxito", "Producto creado correctamente", "success");
-        onSuccess?.();
-      },
-      onError: (err) => {
-        Swal.fire("Error", "No se pudo crear el producto", "error");
-        console.error(err);
-      },
-    });
+    try {
+      const created = await createProductMutation.mutateAsync(data);
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      Swal.fire("Éxito", "Producto creado correctamente", "success");
+      onSuccess?.();
+      return created;
+    } catch (err) {
+      Swal.fire("Error", "No se pudo crear el producto", "error");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // UPDATE
-  const handleUpdateProduct = (id: number, p: ProductCreate, onSuccess?: () => void) => {
+  const handleUpdateProduct = async (id: number, p: ProductCreate, onSuccess?: () => void) => {
     setLoading(true);
-    updateProductMutation.mutate(
-      { id, p },
-      {
-        onSettled: () => setLoading(false),
-        onSuccess: async () => {
-          await queryClient.invalidateQueries({ queryKey: ["products"] });
-          await queryClient.refetchQueries({ queryKey: ["products"] });
-          Swal.fire("Éxito", "Producto actualizado correctamente", "success");
-          onSuccess?.();
-        },
-        onError: (err) => {
-          Swal.fire("Error", "No se pudo actualizar el producto", "error");
-          console.error("ERROR AL ACTUALIZAR", err);
-        },
-      }
-    );
+    try {
+      const updated = await updateProductMutation.mutateAsync({ id, p });
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      Swal.fire("Éxito", "Producto actualizado correctamente", "success");
+      onSuccess?.();
+      return updated;
+    } catch (err) {
+      Swal.fire("Error", "No se pudo actualizar el producto", "error");
+      console.error("ERROR AL ACTUALIZAR", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // DELETE
-  const handleDeleteProduct = (id: number) => {
+  const handleDeleteProduct = async (id: number) => {
     setLoading(true);
-    deleteProductMutation.mutate(id, {
-      onSettled: () => setLoading(false),
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: ["products"] });
-        await queryClient.refetchQueries({ queryKey: ["products"] });
-        Swal.fire("Éxito", "Producto eliminado correctamente", "success");
-      },
-      onError: (err) => {
-        Swal.fire("Error", "No se pudo eliminar el producto", "error");
-        console.error(err);
-      },
-    });
+    try {
+      await deleteProductMutation.mutateAsync(id);
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
+      Swal.fire("Éxito", "Producto eliminado correctamente", "success");
+    } catch (err) {
+      Swal.fire("Error", "No se pudo eliminar el producto", "error");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {

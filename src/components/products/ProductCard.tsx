@@ -24,17 +24,17 @@ export const ProductCard = ({ product, type }: ProductCardProps) => {
       className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700
                  text-gray-900 dark:text-gray-100 transition-colors duration-300"
     >
-      <div className="flex justify-between items-center">
-        <h5 className="text-xl font-bold tracking-tight">
+      <div className="flex justify-between items-center gap-2">
+        <h5 className="text-lg font-bold tracking-tight">
           {product.product_name}
         </h5>
         {(product.discount ?? 0) > 0 && (
-          <Badge color="green">-{product.discount}%</Badge>
+          <Badge color="green" size="sm">-{product.discount}%</Badge>
         )}
       </div>
 
       {product.description && (
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
           {product.description}
         </p>
       )}
